@@ -1,0 +1,21 @@
+# config/database.yml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: kidtracker_development
+
+test:
+  <<: *default
+  database: kidtracker_test
+
+production:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME") { "kidtracker_production" } %>
+  host: <%= ENV.fetch("DATABASE_HOST") { "db" } %>
+  port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+  username: <%= ENV.fetch("DATABASE_USER") { "kidtracker" } %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") { nil } %>

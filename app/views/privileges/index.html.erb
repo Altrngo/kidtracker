@@ -1,0 +1,38 @@
+<%# app/views/privileges/index.html.erb %>
+<div class="kt-page-header">
+  <h1>Privilèges</h1>
+  <%= link_to "Nouveau privilège", new_privilege_path, class: "kt-btn kt-btn--primary" %>
+</div>
+
+<p style="color:var(--text-secondary); font-size:.875rem; margin-bottom:1.25rem;">
+  Les enfants utilisent leurs points pour débloquer ces récompenses.
+</p>
+
+<% if @privileges.empty? %>
+  <div class="kt-card" style="text-align:center; padding:3rem; color:var(--text-secondary)">
+    <p style="font-size:2rem; margin-bottom:.75rem">🎁</p>
+    <p style="font-weight:500">Aucun privilège créé</p>
+    <%= link_to "Créer un premier privilège", new_privilege_path, class: "kt-btn kt-btn--primary kt-btn--sm", style: "margin-top:.75rem" %>
+  </div>
+<% else %>
+  <div class="kt-privilege-grid">
+    <% @privileges.each do |p| %>
+      <div class="kt-privilege-card">
+        <div class="kt-privilege-name"><%= p.name %></div>
+        <div class="kt-privilege-cost">
+          <%= p.point_cost %>
+          <span class="kt-privilege-cost__unit">pts</span>
+        </div>
+        <% unless p.active? %>
+          <span class="kt-badge kt-badge--gray" style="align-self:flex-start">Inactif</span>
+        <% end %>
+        <div style="display:flex; gap:.4rem; margin-top:auto; padding-top:.5rem;">
+          <%= link_to "Modifier", edit_privilege_path(p), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+          <%= button_to "Supprimer", privilege_path(p), method: :delete,
+              class: "kt-btn kt-btn--danger kt-btn--sm",
+              data: { turbo_confirm: "Supprimer \"#{p.name}\" ?" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,60 @@
+<%# app/views/weeks/_item_row.html.erb %>
+<%# locals: child_item, week, entries_by_day (Hash day_of_week => DayEntry) %>
+<tr id="row_child_item_<%= child_item.id %>">
+  <td>
+    <div class="kt-item-name"><%= child_item.item.name %></div>
+    <div class="kt-item-meta">
+      🟢 <%= child_item.green_points > 0 ? "+#{child_item.green_points}" : child_item.green_points %>&nbsp;
+      🟡 <%= child_item.yellow_points %>&nbsp;
+      🔴 <%= child_item.red_points %>
+    </div>
+  </td>
+
+  <% (0..6).each do |day| %>
+    <td class="kt-smiley-cell">
+      <% entry = entries_by_day[day] %>
+      <% state = entry&.emoji_state.to_s %>
+
+      <% if week.finalized? %>
+        <%# Semaine verrouillée : affichage seul %>
+        <span class="kt-smiley-btn" data-state="<%= state %>">
+          <%= state == "green" ? "🟢" : state == "yellow" ? "🟡" : state == "red" ? "🔴" : "—" %>
+        </span>
+      <% else %>
+        <%# Smiley interactif avec popup %>
+        <div data-controller="smiley-picker"
+             data-smiley-picker-state-value="<%= state %>"
+             data-smiley-picker-url-value="<%= child_week_day_entry_path(week.child, week, 0) %>"
+             data-smiley-picker-child-item-id-value="<%= child_item.id %>"
+             data-smiley-picker-day-value="<%= day %>">
+
+          <button class="kt-smiley-btn"
+                  data-smiley-picker-target="btn"
+                  data-action="click->smiley-picker#toggle"
+                  data-state="<%= state %>"
+                  type="button">
+            <%= state == "green" ? "🟢" : state == "yellow" ? "🟡" : state == "red" ? "🔴" : "—" %>
+          </button>
+
+          <div class="kt-smiley-popup" data-smiley-picker-target="popup">
+            <button class="kt-smiley-popup__btn" data-pick="green"
+                    data-action="click->smiley-picker#pick" type="button">🟢</button>
+            <button class="kt-smiley-popup__btn" data-pick="yellow"
+                    data-action="click->smiley-picker#pick" type="button">🟡</button>
+            <button class="kt-smiley-popup__btn" data-pick="red"
+                    data-action="click->smiley-picker#pick" type="button">🔴</button>
+          </div>
+        </div>
+      <% end %>
+    </td>
+  <% end %>
+
+  <%# Total ligne %>
+  <td>
+    <% total = entries_by_day.values.sum(&:computed_points) %>
+    <% css = total > 0 ? "pos" : total < 0 ? "neg" : "zero" %>
+    <span class="kt-row-score kt-row-score--<%= css %>">
+      <%= total > 0 ? "+#{total}" : total %>
+    </span>
+  </td>
+</tr>

@@ -1,0 +1,69 @@
+<%# app/views/point_transactions/new.html.erb %>
+
+<% color = child_color_name(@child.avatar_color) %>
+
+<div class="kt-page-header">
+  <div style="display:flex; align-items:center; gap:.75rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:38px;height:38px;font-size:.95rem;">
+      <%= @child.first_name[0].upcase %>
+    </div>
+    <div>
+      <h1>Points — <%= @child.first_name %></h1>
+      <div style="font-size:.85rem; color:var(--text-secondary);">
+        Solde actuel : <strong style="color:var(--text-primary)"><%= @child.total_points %> pts</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Rachat de privilège %>
+<div class="kt-card" style="margin-bottom:1.25rem;">
+  <h2 style="margin-bottom:1rem;">🎁 Racheter un privilège</h2>
+
+  <% if @privileges.empty? %>
+    <p style="color:var(--text-secondary); font-size:.875rem;">
+      Aucun privilège disponible.
+      <%= link_to "En créer un", new_privilege_path %>
+    </p>
+  <% else %>
+    <div class="kt-privilege-grid" style="margin-bottom:1rem;">
+      <% @privileges.each do |p| %>
+        <div class="kt-privilege-card" style="<%= @child.total_points >= p.point_cost ? '' : 'opacity:.5' %>">
+          <div class="kt-privilege-name"><%= p.name %></div>
+          <div class="kt-privilege-cost">
+            <%= p.point_cost %><span class="kt-privilege-cost__unit">pts</span>
+          </div>
+          <%= form_with url: child_point_transactions_path(@child), method: :post do |f| %>
+            <%= hidden_field_tag "point_transaction[privilege_id]", p.id %>
+            <%= f.submit "Racheter",
+                class: "kt-btn kt-btn--success kt-btn--sm",
+                disabled: @child.total_points < p.point_cost,
+                style: "margin-top:.5rem; width:100%",
+                data: { turbo_confirm: "Accorder \"#{p.name}\" à #{@child.first_name} pour #{p.point_cost} pts ?" } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# Ajustement manuel %>
+<div class="kt-card">
+  <h2 style="margin-bottom:1rem;">✏️ Ajustement manuel</h2>
+  <%= form_with url: child_point_transactions_path(@child), method: :post do |f| %>
+    <div class="kt-form-group">
+      <%= label_tag "point_transaction[amount]", "Points (négatif pour retrait)", class: "kt-label" %>
+      <%= number_field_tag "point_transaction[amount]", nil,
+          class: "kt-input", placeholder: "Ex : +5 ou -3", style: "max-width:160px" %>
+    </div>
+    <div class="kt-form-group">
+      <%= label_tag "point_transaction[reason]", "Motif", class: "kt-label" %>
+      <%= text_field_tag "point_transaction[reason]", nil,
+          class: "kt-input", placeholder: "Ex : Bonne conduite exceptionnelle" %>
+    </div>
+    <div style="display:flex; gap:.75rem;">
+      <%= f.submit "Enregistrer", class: "kt-btn kt-btn--primary" %>
+      <%= link_to "Annuler", child_point_transactions_path(@child), class: "kt-btn kt-btn--ghost" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,33 @@
+<%= form_with model: child, class: "kt-card" do |f| %>
+  <% if child.errors.any? %>
+    <div class="kt-error-list">
+      <ul>
+        <% child.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="kt-form-group">
+    <%= f.label :first_name, "Prénom", class: "kt-label" %>
+    <%= f.text_field :first_name, class: "kt-input", placeholder: "Ex : Emma" %>
+  </div>
+
+  <div class="kt-form-group">
+    <span class="kt-label">Couleur</span>
+    <div class="kt-color-picker">
+      <% Child::AVATAR_COLORS.each do |color| %>
+        <%= f.radio_button :avatar_color, color, class: "kt-color-radio", id: "color_#{color.delete('#')}" %>
+        <label for="color_<%= color.delete('#') %>">
+          <span class="kt-color-swatch" style="background:<%= color %>"></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+    <%= f.submit child.new_record? ? "Créer l'enfant" : "Enregistrer", class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Annuler", children_path, class: "kt-btn kt-btn--ghost" %>
+  </div>
+<% end %>

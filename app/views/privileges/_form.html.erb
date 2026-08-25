@@ -1,0 +1,29 @@
+<%# app/views/privileges/_form.html.erb %>
+
+<%= form_with model: privilege, class: "kt-card" do |f| %>
+  <% if privilege.errors.any? %>
+    <div class="kt-error-list">
+      <ul><% privilege.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <div class="kt-form-group">
+    <%= f.label :name, "Nom du privilège", class: "kt-label" %>
+    <%= f.text_field :name, class: "kt-input", placeholder: "Ex : Séance de trampoline" %>
+  </div>
+
+  <div class="kt-form-group">
+    <%= f.label :point_cost, "Coût en points", class: "kt-label" %>
+    <%= f.number_field :point_cost, class: "kt-input", min: 1, placeholder: "Ex : 30" %>
+  </div>
+
+  <div class="kt-form-group" style="display:flex; align-items:center; gap:.75rem;">
+    <%= f.check_box :active, id: "privilege_active" %>
+    <%= f.label :active, "Privilège actif", class: "kt-label", style: "margin:0; cursor:pointer" %>
+  </div>
+
+  <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+    <%= f.submit privilege.new_record? ? "Créer le privilège" : "Enregistrer", class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Annuler", privileges_path, class: "kt-btn kt-btn--ghost" %>
+  </div>
+<% end %>

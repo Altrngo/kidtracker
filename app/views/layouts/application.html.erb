@@ -1,0 +1,60 @@
+<%# app/views/layouts/application.html.erb %>
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <title>KidTracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <nav class="kt-navbar">
+      <%= link_to dashboard_path, class: "kt-navbar__brand" do %>
+        <span class="kt-navbar__brand-icon">⭐</span>
+        KidTracker
+      <% end %>
+
+      <% if user_signed_in? %>
+        <div class="kt-navbar__nav">
+          <%= link_to children_path, class: "kt-navbar__link" do %>
+            👧 <span>Enfants</span>
+          <% end %>
+          <%= link_to items_path, class: "kt-navbar__link" do %>
+            📋 <span>Items</span>
+          <% end %>
+          <%= link_to privileges_path, class: "kt-navbar__link" do %>
+            🎁 <span>Privilèges</span>
+          <% end %>
+          <% if current_user.admin? %>
+            <%= link_to admin_root_path, class: "kt-navbar__admin-badge" do %>
+              ⚙️ Admin
+            <% end %>
+          <% end %>
+          <%= link_to destroy_user_session_path,
+                class: "kt-navbar__link",
+                data: { turbo_method: :delete } do %>
+            <span>Déconnexion</span>
+          <% end %>
+        </div>
+      <% end %>
+    </nav>
+
+    <% if notice.present? %>
+      <div class="kt-flash">
+        <div class="kt-flash__notice"><%= notice %></div>
+      </div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="kt-flash">
+        <div class="kt-flash__alert"><%= alert %></div>
+      </div>
+    <% end %>
+
+    <main class="kt-main">
+      <%= yield %>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<%= form_with model: [:admin, user] do |f| %>
+  <% if user.errors.any? %>
+    <ul><% user.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+  <% end %>
+
+  <div>
+    <%= f.label :email %>
+    <%= f.email_field :email %>
+  </div>
+
+  <div>
+    <%= f.label :password, "Mot de passe (laisser vide pour ne pas changer)" %>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+  </div>
+
+  <div>
+    <%= f.label :password_confirmation, "Confirmation" %>
+    <%= f.password_field :password_confirmation %>
+  </div>
+
+  <div>
+    <%= f.label :admin, "Administrateur" %>
+    <%= f.check_box :admin %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

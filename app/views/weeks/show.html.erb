@@ -1,0 +1,58 @@
+<%# app/views/weeks/show.html.erb %>
+<% color = child_color_name(@child.avatar_color) %>
+
+<div class="kt-page-header">
+  <div>
+    <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.25rem;">
+      <div class="kt-child-avatar" data-color="<%= color %>" style="width:36px;height:36px;font-size:.9rem;">
+        <%= @child.first_name[0].upcase %>
+      </div>
+      <h1><%= @child.first_name %></h1>
+    </div>
+    <div class="kt-week-meta"><%= @week.label %></div>
+  </div>
+
+  <% if @week.finalized? %>
+    <span class="kt-badge kt-badge--green">
+      ✅ Finalisée — <%= @week.week_score > 0 ? "+#{@week.week_score}" : @week.week_score %> pts
+    </span>
+  <% else %>
+    <%= button_to "Finaliser la semaine",
+          finalize_child_week_path(@child, @week),
+          method: :patch,
+          class: "kt-btn kt-btn--success",
+          data: { turbo_confirm: "Finaliser cette semaine ? Les points seront crédités et le tableau verrouillé." } %>
+  <% end %>
+</div>
+
+<div class="kt-card" style="padding: 0; overflow: hidden;">
+  <div class="kt-week-wrap">
+    <table class="kt-week-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <% Week::DAYS.each do |day| %>
+            <th><%= day[0..2] %></th>
+          <% end %>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @child_items.each do |child_item| %>
+          <%= render "item_row",
+                child_item: child_item,
+                week: @week,
+                entries_by_day: @entries_by_item_and_day
+                                  .select { |k, _| k[0] == child_item.id }
+                                  .transform_keys { |k| k[1] } %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="margin-top: 1rem; display:flex; gap:.75rem; flex-wrap:wrap;">
+  <%= link_to "Historique des semaines", child_weeks_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+  <%= link_to "Points & privilèges", new_child_point_transaction_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+  <%= link_to "Retour au profil", child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+</div>

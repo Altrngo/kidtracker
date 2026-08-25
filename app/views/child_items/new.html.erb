@@ -1,0 +1,42 @@
+<%# app/views/child_items/new.html.erb %>
+<div class="kt-page-header">
+  <h1>Assigner un item à <%= @child.first_name %></h1>
+</div>
+
+<%= form_with model: [@child, @child_item], class: "kt-card" do |f| %>
+  <% if @child_item.errors.any? %>
+    <div class="kt-error-list">
+      <ul><% @child_item.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <div class="kt-form-group">
+    <%= f.label :item_id, "Item", class: "kt-label" %>
+    <%= f.grouped_collection_select :item_id,
+        @available_items.group_by(&:category),
+        :last, ->(cat) { cat.first.presence&.capitalize || "Sans catégorie" },
+        :id, :name,
+        { include_blank: "— Choisir un item —" },
+        class: "kt-select" %>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem;">
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🟢 Smiley vert</label>
+      <%= f.number_field :green_points, value: 1, class: "kt-input" %>
+    </div>
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🟡 Smiley jaune</label>
+      <%= f.number_field :yellow_points, value: 0, class: "kt-input" %>
+    </div>
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🔴 Smiley rouge</label>
+      <%= f.number_field :red_points, value: -1, class: "kt-input" %>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+    <%= f.submit "Assigner", class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Annuler", child_path(@child), class: "kt-btn kt-btn--ghost" %>
+  </div>
+<% end %>

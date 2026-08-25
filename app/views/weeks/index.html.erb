@@ -1,0 +1,62 @@
+<%# app/views/weeks/index.html.erb %>
+
+<%=color = child_color_name(@child.avatar_color) %>
+<div class="kt-page-header">
+  <div style="display:flex; align-items:center; gap:.75rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:38px;height:38px;font-size:.95rem;">
+      <%= @child.first_name[0].upcase %>
+    </div>
+    <h1>Semaines — <%= @child.first_name %></h1>
+  </div>
+  <%= link_to "Semaine en cours →", child_week_path(@child, @current_week), class: "kt-btn kt-btn--primary kt-btn--sm" %>
+</div>
+
+<% if @weeks.empty? %>
+  <div class="kt-card" style="text-align:center; padding:2.5rem; color:var(--text-secondary)">
+    <p>Aucune semaine enregistrée.</p>
+  </div>
+<% else %>
+  <div class="kt-card" style="padding:0; overflow:hidden;">
+    <table class="kt-table">
+      <thead>
+        <tr>
+          <th>Semaine</th>
+          <th style="text-align:center">Score</th>
+          <th style="text-align:center">Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @weeks.each do |week| %>
+          <tr>
+            <td style="font-weight:500"><%= week.label %></td>
+            <td style="text-align:center">
+              <% if week.finalized? %>
+                <% css = week.week_score > 0 ? "pos" : week.week_score < 0 ? "neg" : "zero" %>
+                <span class="kt-row-score kt-row-score--<%= css %>">
+                  <%= week.week_score > 0 ? "+#{week.week_score}" : week.week_score %>
+                </span>
+              <% else %>
+                <span style="color:var(--text-tertiary)">—</span>
+              <% end %>
+            </td>
+            <td style="text-align:center">
+              <% if week.finalized? %>
+                <span class="kt-badge kt-badge--green">Finalisée</span>
+              <% else %>
+                <span class="kt-badge kt-badge--yellow">En cours</span>
+              <% end %>
+            </td>
+            <td style="text-align:right">
+              <%= link_to "Voir", child_week_path(@child, week), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<div style="margin-top:1rem;">
+  <%= link_to "Retour au profil", child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+</div>

@@ -1,0 +1,55 @@
+<%# app/views/items/index.html.erb %>
+<div class="kt-page-header">
+  <h1>Items</h1>
+  <%= link_to "Nouvel item", new_item_path, class: "kt-btn kt-btn--primary" %>
+</div>
+
+<% if @items.empty? %>
+  <div class="kt-card" style="text-align:center; padding:3rem; color:var(--text-secondary)">
+    <p style="font-size:2rem; margin-bottom:.75rem">📋</p>
+    <p style="font-weight:500">Aucun item créé</p>
+    <%= link_to "Créer un premier item", new_item_path, class: "kt-btn kt-btn--primary kt-btn--sm", style: "margin-top:.75rem" %>
+  </div>
+<% else %>
+  <% @items.group_by(&:category).each do |category, items| %>
+    <div style="margin-bottom:1.5rem;">
+      <h2 style="font-size:.85rem; font-weight:500; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem;">
+        <%= category.presence&.capitalize || "Sans catégorie" %>
+      </h2>
+
+      <div class="kt-card" style="padding:0; overflow:hidden;">
+        <table class="kt-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th style="text-align:center">Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.each do |item| %>
+              <tr>
+                <td style="font-weight:500"><%= item.name %></td>
+                <td style="text-align:center">
+                  <% if item.active? %>
+                    <span class="kt-badge kt-badge--green">Actif</span>
+                  <% else %>
+                    <span class="kt-badge kt-badge--gray">Inactif</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div style="display:flex; gap:.4rem; justify-content:flex-end;">
+                    <%= link_to "Modifier", edit_item_path(item), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+                    <%= button_to "Supprimer", item_path(item), method: :delete,
+                        class: "kt-btn kt-btn--danger kt-btn--sm",
+                        data: { turbo_confirm: "Supprimer \"#{item.name}\" ?" } %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+<% end %>

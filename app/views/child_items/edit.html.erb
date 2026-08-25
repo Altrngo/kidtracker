@@ -1,0 +1,39 @@
+<%# app/views/child_items/edit.html.erb %>
+<%#
+<div class="kt-page-header">
+  <h1>Modifier — <%= @child_item.item.name %></h1>
+  <span style="font-size:.875rem; color:var(--text-secondary)">pour <%= @child.first_name %></span>
+</div>
+
+<%= form_with model: @child_item, class: "kt-card" do |f| %>
+  <% if @child_item.errors.any? %>
+    <div class="kt-error-list">
+      <ul><% @child_item.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem;">
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🟢 Smiley vert</label>
+      <%= f.number_field :green_points, class: "kt-input" %>
+    </div>
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🟡 Smiley jaune</label>
+      <%= f.number_field :yellow_points, class: "kt-input" %>
+    </div>
+    <div class="kt-form-group" style="margin:0">
+      <label class="kt-label">🔴 Smiley rouge</label>
+      <%= f.number_field :red_points, class: "kt-input" %>
+    </div>
+  </div>
+
+  <div class="kt-form-group" style="display:flex; align-items:center; gap:.75rem;">
+    <%= f.check_box :active %>
+    <%= f.label :active, "Item actif pour cet enfant", class: "kt-label", style: "margin:0; cursor:pointer" %>
+  </div>
+
+  <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+    <%= f.submit "Enregistrer", class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Annuler", child_path(@child_item.child), class: "kt-btn kt-btn--ghost" %>
+  </div>
+<% end %>

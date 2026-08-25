@@ -1,0 +1,21 @@
+#!/bin/bash -e
+# bin/docker-entrypoint
+
+# Si le premier argument est rails et qu'on lance le serveur,
+# on attend la DB et on prépare la base (migrate) avant de démarrer
+if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
+  # Attend que PostgreSQL soit prêt (max 30s)
+  echo "⏳ Attente de PostgreSQL..."
+  for i in $(seq 1 30); do
+    if ./bin/rails runner "ActiveRecord::Base.connection" 2>/dev/null; then
+      echo "✅ PostgreSQL prêt."
+      break
+    fi
+    sleep 1
+  done
+
+  # Crée la DB si elle n'existe pas + applique les migrations en attente
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"

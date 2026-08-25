@@ -1,0 +1,59 @@
+# docker-compose.yml
+# Déploiement KidTracker sur Synology NAS (Container Manager)
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: kidtracker_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kidtracker
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: kidtracker_production
+    volumes:
+      - kidtracker_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kidtracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kidtracker_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kidtracker_web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: db
+      DATABASE_PORT: "5432"
+      DATABASE_USER: kidtracker
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_NAME: kidtracker_production
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      RAILS_SERVE_STATIC_FILES: "true"
+      RAILS_LOG_TO_STDOUT: "true"
+      # Mettre à "true" uniquement si HTTPS est en place via reverse proxy
+      RAILS_FORCE_SSL: "false"
+    ports:
+      # Port exposé sur le NAS — ajuste selon tes besoins
+      - "3010:3000"
+    volumes:
+      # Persistance des fichiers uploadés / Active Storage si utilisé
+      - kidtracker_storage:/rails/storage
+    networks:
+      - kidtracker_net
+
+volumes:
+  kidtracker_db_data:
+  kidtracker_storage:
+
+networks:
+  kidtracker_net:
+    driver: bridge
