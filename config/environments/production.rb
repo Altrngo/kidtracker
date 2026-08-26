@@ -25,7 +25,7 @@ Rails.application.configure do
   # config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = ENV.fetch("RAILS_FORCE_SSL", "false") == "true"
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
@@ -79,6 +79,13 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
+  #
+  config.hosts << "kidtracker.carbonk216.synology.me"
+
+  # Accès local pour le debug depuis le LAN :
+  config.hosts << /\A192\.168\.\d+\.\d+\z/
+  config.hosts << "localhost"
+  #
   # config.hosts = [
   #   "example.com",     # Allow requests from example.com
   #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
@@ -86,4 +93,12 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  #
+  #
+  config.action_dispatch.trusted_proxies = [
+  IPAddr.new("127.0.0.1"),
+  IPAddr.new("::1"),
+  IPAddr.new("172.16.0.0/12"),   # réseau Docker
+  IPAddr.new("192.168.0.0/16")   # réseau local
+  ]
 end
