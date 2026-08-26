@@ -80,7 +80,7 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   #
-  config.hosts << "kidtracker.carbonk216.synology.me"
+  config.hosts << "kidtracker.carbondsm-cal.synology.me"
 
   # Accès local pour le debug depuis le LAN :
   config.hosts << /\A192\.168\.\d+\.\d+\z/
