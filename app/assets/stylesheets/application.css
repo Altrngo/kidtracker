@@ -22,12 +22,13 @@
   --text-tertiary:  #a09d97;
 
   /* Couleurs enfants */
-  --c-blue-light:  #E6F1FB; --c-blue-mid: #378ADD; --c-blue-dark: #0C447C;
-  --c-teal-light:  #E1F5EE; --c-teal-mid: #1D9E75; --c-teal-dark: #085041;
-  --c-coral-light: #FAECE7; --c-coral-mid: #D85A30; --c-coral-dark: #712B13;
-  --c-amber-light: #FAEEDA; --c-amber-mid: #BA7517; --c-amber-dark: #633806;
-  --c-purple-light:#EEEDFE; --c-purple-mid:#534AB7; --c-purple-dark:#26215C;
-  --c-pink-light:  #FBEAF0; --c-pink-mid:  #D4537E; --c-pink-dark:  #4B1528;
+  --c-purple-light:#EDE9FE; --c-purple-mid:#7C3AED; --c-purple-dark:#4C1D95;
+  --c-blue-light:  #DBEAFE; --c-blue-mid:  #2563EB; --c-blue-dark:  #1E3A8A;
+  --c-teal-light:  #D1FAE5; --c-teal-mid:  #059669; --c-teal-dark:  #064E3B;
+  --c-amber-light: #FEF3C7; --c-amber-mid: #D97706; --c-amber-dark: #78350F;
+  --c-red-light:   #FEE2E2; --c-red-mid:   #DC2626; --c-red-dark:   #7F1D1D;
+  --c-pink-light:  #FCE7F3; --c-pink-mid:  #DB2777; --c-pink-dark:  #831843;
+  --c-cyan-light:  #CFFAFE; --c-cyan-mid:  #0891B2; --c-cyan-dark:  #164E63;
 
   /* Smileys */
   --c-green-bg: #EAF3DE; --c-green-border: #639922; --c-green-text: #3B6D11;
@@ -190,12 +191,13 @@ h3 { font-size: 1rem;    font-weight: 600; color: var(--text-primary); }
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 5px;
 }
-.kt-child-card[data-color="blue"]::before   { background: linear-gradient(90deg, #185FA5, #378ADD, #85B7EB); }
-.kt-child-card[data-color="teal"]::before   { background: linear-gradient(90deg, #0F6E56, #1D9E75, #5DCAA5); }
-.kt-child-card[data-color="coral"]::before  { background: linear-gradient(90deg, #993C1D, #D85A30, #F0997B); }
-.kt-child-card[data-color="amber"]::before  { background: linear-gradient(90deg, #854F0B, #BA7517, #EF9F27); }
-.kt-child-card[data-color="purple"]::before { background: linear-gradient(90deg, #3C3489, #534AB7, #7F77DD); }
-.kt-child-card[data-color="pink"]::before   { background: linear-gradient(90deg, #72243E, #D4537E, #ED93B1); }
+.kt-child-card[data-color="purple"]::before { background: linear-gradient(90deg, #5B21B6, #7C3AED, #A78BFA); }
+.kt-child-card[data-color="blue"]::before   { background: linear-gradient(90deg, #1D4ED8, #2563EB, #93C5FD); }
+.kt-child-card[data-color="teal"]::before   { background: linear-gradient(90deg, #047857, #059669, #6EE7B7); }
+.kt-child-card[data-color="amber"]::before  { background: linear-gradient(90deg, #B45309, #D97706, #FCD34D); }
+.kt-child-card[data-color="red"]::before    { background: linear-gradient(90deg, #B91C1C, #DC2626, #FCA5A5); }
+.kt-child-card[data-color="pink"]::before   { background: linear-gradient(90deg, #BE185D, #DB2777, #F9A8D4); }
+.kt-child-card[data-color="cyan"]::before   { background: linear-gradient(90deg, #0E7490, #0891B2, #67E8F9); }
 
 .kt-child-avatar {
   width: 44px; height: 44px; border-radius: 50%;
@@ -214,12 +216,13 @@ h3 { font-size: 1rem;    font-weight: 600; color: var(--text-primary); }
 .kt-child-score__unit { font-size: .8rem; font-weight: 400; color: var(--text-secondary); }
 
 /* Couleurs avatar par enfant */
+.kt-child-avatar[data-color="purple"] { background: var(--c-purple-light); color: var(--c-purple-dark); }
 .kt-child-avatar[data-color="blue"]   { background: var(--c-blue-light);   color: var(--c-blue-dark);   }
 .kt-child-avatar[data-color="teal"]   { background: var(--c-teal-light);   color: var(--c-teal-dark);   }
-.kt-child-avatar[data-color="coral"]  { background: var(--c-coral-light);  color: var(--c-coral-dark);  }
 .kt-child-avatar[data-color="amber"]  { background: var(--c-amber-light);  color: var(--c-amber-dark);  }
-.kt-child-avatar[data-color="purple"] { background: var(--c-purple-light); color: var(--c-purple-dark); }
+.kt-child-avatar[data-color="red"]    { background: var(--c-red-light);    color: var(--c-red-dark);    }
 .kt-child-avatar[data-color="pink"]   { background: var(--c-pink-light);   color: var(--c-pink-dark);   }
+.kt-child-avatar[data-color="cyan"]   { background: var(--c-cyan-light);   color: var(--c-cyan-dark);   }
 
 /* ── Carte générique ────────────────────────────────────────── */
 .kt-card {
@@ -398,15 +401,25 @@ h3 { font-size: 1rem;    font-weight: 600; color: var(--text-primary); }
 .kt-error-list ul { padding-left: 1.25rem; }
 
 /* Color picker pour avatar */
-.kt-color-picker { display: flex; gap: .5rem; flex-wrap: wrap; }
+.kt-color-picker { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+
 .kt-color-swatch {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2.5px solid transparent; cursor: pointer;
-  transition: transform .1s;
+  display: inline-block;          /* ← indispensable */
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform .1s, border-color .1s;
 }
 .kt-color-swatch:hover { transform: scale(1.15); }
-input[type="radio"]:checked + .kt-color-swatch { border-color: var(--text-primary); }
+
 input[type="radio"].kt-color-radio { display: none; }
+
+/* Le span est DANS le label, pas frère de l'input */
+input[type="radio"].kt-color-radio:checked + label .kt-color-swatch {
+  border-color: var(--text-primary);
+  transform: scale(1.1);
+}
 
 /* ── Tables génériques ──────────────────────────────────────── */
 .kt-table {

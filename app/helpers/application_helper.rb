@@ -2,12 +2,13 @@
 module ApplicationHelper
   # Mappe une couleur hex (stockée dans avatar_color) vers un nom de couleur CSS
   COLOR_MAP = {
-    "#378ADD" => "blue",
-    "#1D9E75" => "teal",
-    "#D85A30" => "coral",
-    "#BA7517" => "amber",
-    "#534AB7" => "purple",
-    "#D4537E" => "pink"
+    "#7C3AED" => "purple",
+    "#2563EB" => "blue",
+    "#059669" => "teal",
+    "#D97706" => "amber",
+    "#DC2626" => "red",
+    "#DB2777" => "pink",
+    "#0891B2" => "cyan"
   }.freeze
 
   def child_color_name(hex)
