@@ -1,0 +1,55 @@
+<%# app/views/devise/sessions/new.html.erb %>
+<div class="kt-auth-wrap">
+  <div class="kt-auth-card">
+
+    <div class="kt-auth-header">
+      <div class="kt-auth-logo">⭐</div>
+      <h1 class="kt-auth-title">KidTracker</h1>
+      <p class="kt-auth-subtitle">Tableau de comportement familial</p>
+    </div>
+
+    <div class="kt-auth-body">
+      <%= form_for(resource, as: resource_name,
+            url: session_path(resource_name),
+            html: { class: "kt-auth-form" }) do |f| %>
+
+        <% if flash[:alert].present? %>
+          <div class="kt-auth-error"><%= flash[:alert] %></div>
+        <% end %>
+
+        <div class="kt-form-group">
+          <%= f.label :email, "Adresse e-mail", class: "kt-label" %>
+          <%= f.email_field :email,
+                autofocus: true,
+                autocomplete: "email",
+                class: "kt-input",
+                placeholder: "vous@exemple.com" %>
+        </div>
+
+        <div class="kt-form-group">
+          <%= f.label :password, "Mot de passe", class: "kt-label" %>
+          <%= f.password_field :password,
+                autocomplete: "current-password",
+                class: "kt-input",
+                placeholder: "••••••••" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <label class="kt-auth-remember">
+            <%= f.check_box :remember_me %>
+            <span>Rester connecté sur cet appareil</span>
+          </label>
+        <% end %>
+
+        <%= f.submit "Se connecter", class: "kt-btn kt-btn--primary kt-auth-submit" %>
+      <% end %>
+
+      <% if devise_mapping.recoverable? && controller_name != "passwords" %>
+        <div class="kt-auth-links">
+          <%= link_to "Mot de passe oublié ?", new_password_path(resource_name) %>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

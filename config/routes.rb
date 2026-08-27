@@ -1,7 +1,11 @@
 
 # config/routes.rb
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, skip: [ :registrations ]
+  devise_scope :user do
+    get    "compte/edition" => "devise/registrations#edit",   as: :edit_user_registration
+    put    "compte"         => "devise/registrations#update", as: :user_registration
+  end
 
   authenticated :user do
     root to: "dashboard#index", as: :dashboard

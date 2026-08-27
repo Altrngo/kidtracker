@@ -1,31 +1,98 @@
 <%# app/views/dashboard/index.html.erb %>
-<div class="kt-page-header">
-  <h1>Tableau de bord</h1>
-  <%= link_to "Ajouter un enfant", new_child_path, class: "kt-btn kt-btn--primary kt-btn--sm" %>
+
+<div class="kt-hero">
+  <div>
+    <h1 class="kt-hero__title">Bonjour 👋</h1>
+    <p class="kt-hero__date"><%= l(@today, format: :long) rescue @today.strftime("%d/%m/%Y") %></p>
+  </div>
+  <%= link_to "Ajouter un enfant", new_child_path, class: "kt-btn kt-btn--primary" %>
 </div>
 
-<% if @children.empty? %>
-  <div class="kt-card" style="text-align:center; padding: 3rem 1.5rem; color: var(--text-secondary);">
-    <p style="font-size: 2.5rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</p>
-    <p style="font-weight: 500; margin-bottom: .5rem;">Aucun enfant enregistré</p>
+<% if @summaries.empty? %>
+
+  <div class="kt-empty">
+    <div class="kt-empty__icon">👨‍👩‍👧‍👦</div>
+    <p class="kt-empty__title">Aucun enfant enregistré</p>
+    <p class="kt-empty__text">Commence par créer un profil pour suivre son tableau de comportement.</p>
     <%= link_to "Ajouter un premier enfant", new_child_path, class: "kt-btn kt-btn--primary" %>
   </div>
+
 <% else %>
-  <div class="kt-child-grid">
-    <% @children.each do |child| %>
-      <%# Détermine la couleur depuis avatar_color (ex: "#378ADD" → "blue") %>
+
+  <div class="kt-dash-grid">
+    <% @summaries.each do |s| %>
+      <% child = s[:child] %>
       <% color = child_color_name(child.avatar_color) %>
-      <%= link_to child_weeks_path(child), class: "kt-child-card", data: { color: color } do %>
-        <div class="kt-child-avatar" data-color="<%= color %>">
-          <%= child.first_name[0].upcase %>
+      <% pct   = s[:today_total].zero? ? 0 : (s[:today_filled] * 100.0 / s[:today_total]).round %>
+
+      <div class="kt-dash-card" data-color="<%= color %>">
+
+        <div class="kt-dash-card__head">
+          <div class="kt-child-avatar" data-color="<%= color %>">
+            <%= child.first_name[0].upcase %>
+          </div>
+          <div class="kt-dash-card__ident">
+            <div class="kt-dash-card__name"><%= child.first_name %></div>
+            <div class="kt-dash-card__sub"><%= s[:today_total] %> items suivis</div>
+          </div>
         </div>
-        <div class="kt-child-name"><%= child.first_name %></div>
-        <div class="kt-child-sub"><%= child.child_items.active.count %> items actifs</div>
-        <div class="kt-child-score">
-          <%= child.total_points %>
-          <span class="kt-child-score__unit">pts</span>
+
+        <div class="kt-dash-stats">
+          <div class="kt-dash-stat">
+            <div class="kt-dash-stat__label">Solde</div>
+            <div class="kt-dash-stat__value"><%= child.total_points %><span>pts</span></div>
+          </div>
+          <div class="kt-dash-stat">
+            <div class="kt-dash-stat__label">Cette semaine</div>
+            <div class="kt-dash-stat__value <%= s[:week_score].negative? ? 'is-neg' : s[:week_score].positive? ? 'is-pos' : '' %>">
+              <%= s[:week_score] > 0 ? "+#{s[:week_score]}" : s[:week_score] %><span>pts</span>
+            </div>
+          </div>
         </div>
-      <% end %>
+
+        <div class="kt-dash-progress">
+          <div class="kt-dash-progress__head">
+            <span>Aujourd'hui</span>
+            <strong><%= s[:today_filled] %>/<%= s[:today_total] %></strong>
+          </div>
+          <div class="kt-dash-progress__track">
+            <div class="kt-dash-progress__bar" data-color="<%= color %>" style="width: <%= pct %>%"></div>
+          </div>
+        </div>
+
+        <div class="kt-dash-actions">
+          <%= link_to "Tableau de la semaine", child_week_path(child, s[:week]),
+                class: "kt-btn kt-btn--primary kt-btn--sm" %>
+          <%= link_to "Points", new_child_point_transaction_path(child),
+                class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+        </div>
+
+      </div>
     <% end %>
   </div>
+
+  <div class="kt-quick-links">
+    <%= link_to items_path, class: "kt-quick-link" do %>
+      <span class="kt-quick-link__icon">📋</span>
+      <span>
+        <strong>Items</strong>
+        <em>Gérer les comportements suivis</em>
+      </span>
+    <% end %>
+    <%= link_to privileges_path, class: "kt-quick-link" do %>
+      <span class="kt-quick-link__icon">🎁</span>
+      <span>
+        <strong>Privilèges</strong>
+        <em>Définir les récompenses</em>
+      </span>
+    <% end %>
+    <%= link_to children_path, class: "kt-quick-link" do %>
+      <span class="kt-quick-link__icon">👧</span>
+      <span>
+        <strong>Enfants</strong>
+        <em>Profils et items assignés</em>
+      </span>
+    <% end %>
+  </div>
+
 <% end %>

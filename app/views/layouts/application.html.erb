@@ -11,13 +11,15 @@
   </head>
 
   <body>
-    <nav class="kt-navbar">
-      <%= link_to dashboard_path, class: "kt-navbar__brand" do %>
-        <span class="kt-navbar__brand-icon">⭐</span>
-        KidTracker
-      <% end %>
+    <%# La navbar n'apparaît que pour les utilisateurs connectés :
+        la page de login occupe alors tout l'écran. %>
+    <% if user_signed_in? %>
+      <nav class="kt-navbar">
+        <%= link_to dashboard_path, class: "kt-navbar__brand" do %>
+          <span class="kt-navbar__brand-icon">⭐</span>
+          KidTracker
+        <% end %>
 
-      <% if user_signed_in? %>
         <div class="kt-navbar__nav">
           <%= link_to children_path, class: "kt-navbar__link" do %>
             👧 <span>Enfants</span>
@@ -39,22 +41,25 @@
             <span>Déconnexion</span>
           <% end %>
         </div>
-      <% end %>
-    </nav>
+      </nav>
+    <% end %>
 
+    <%# Sur la page de login, l'alerte est affichée dans la carte elle-même %>
     <% if notice.present? %>
       <div class="kt-flash">
         <div class="kt-flash__notice"><%= notice %></div>
       </div>
     <% end %>
-    <% if alert.present? %>
+    <% if alert.present? && user_signed_in? %>
       <div class="kt-flash">
         <div class="kt-flash__alert"><%= alert %></div>
       </div>
     <% end %>
 
-    <main class="kt-main">
+    <% if user_signed_in? %>
+      <main class="kt-main"><%= yield %></main>
+    <% else %>
       <%= yield %>
-    </main>
+    <% end %>
   </body>
 </html>
