@@ -16,7 +16,9 @@
     <% if user_signed_in? %>
       <nav class="kt-navbar">
         <%= link_to dashboard_path, class: "kt-navbar__brand" do %>
-          <span class="kt-navbar__brand-icon">⭐</span>
+          <span class="kt-navbar__brand-img">
+              <%= image_tag "family_icon.png", alt: "", width: 30, height: 30 %>
+          </span>
           KidTracker
         <% end %>
 
