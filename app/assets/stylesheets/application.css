@@ -736,3 +736,97 @@ input[type="radio"].kt-color-radio:checked + label .kt-color-swatch {
   .kt-hero__title { font-size: 1.35rem; }
   .kt-auth-wrap { padding: 1rem; }
 }
+
+/* Barre d'actions du profil enfant */
+.kt-child-actions {
+  display: flex; gap: .75rem; flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+.kt-child-actions .kt-btn { flex: 1 1 auto; justify-content: center; }
+
+/* En-tête de section */
+.kt-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem; flex-wrap: wrap;
+  margin-bottom: .85rem;
+}
+
+/* ── Liste d'items ─────────────────────────────────────────── */
+.kt-item-list {
+  display: flex; flex-direction: column; gap: .6rem;
+}
+
+.kt-item-row {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: .85rem 1rem;
+
+  display: flex; align-items: center;
+  gap: 1rem; flex-wrap: wrap;
+}
+.kt-item-row.is-inactive { opacity: .55; }
+
+/* Bloc nom + catégorie : prend l'espace disponible */
+.kt-item-row__main {
+  flex: 1 1 180px;
+  min-width: 0;            /* permet au texte long de wrapper */
+}
+.kt-item-row__name {
+  font-weight: 500; font-size: .95rem;
+  line-height: 1.35; margin-bottom: .2rem;
+}
+.kt-item-row__meta {
+  display: flex; gap: .35rem; flex-wrap: wrap;
+}
+
+/* Les trois valeurs de points */
+.kt-item-row__points {
+  display: flex; gap: .4rem; flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+.kt-pt {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 9px; border-radius: 11px;
+  font-size: .78rem; font-weight: 600;
+  white-space: nowrap;
+}
+.kt-pt--green  { background: var(--c-green-bg);  color: var(--c-green-text);  }
+.kt-pt--yellow { background: var(--c-yellow-bg); color: var(--c-yellow-text); }
+.kt-pt--red    { background: var(--c-red-bg);    color: var(--c-red-text);    }
+
+/* Boutons d'action */
+.kt-item-row__actions {
+  display: flex; gap: .4rem;
+  flex: 0 0 auto; margin-left: auto;
+}
+
+/* ── Mobile : tout s'empile proprement ─────────────────────── */
+@media (max-width: 640px) {
+  .kt-item-row {
+    align-items: stretch;
+    gap: .7rem;
+  }
+  /* Le nom occupe toute la largeur */
+  .kt-item-row__main { flex: 1 1 100%; }
+
+  /* Points et actions se partagent la ligne suivante */
+  .kt-item-row__points { flex: 1 1 auto; }
+  .kt-item-row__actions { margin-left: auto; }
+
+  /* Boutons un peu plus compacts */
+  .kt-item-row__actions .kt-btn--sm {
+    padding: .3rem .6rem; font-size: .75rem;
+  }
+
+  /* Les raccourcis du profil passent en pleine largeur */
+  .kt-child-actions .kt-btn { flex: 1 1 100%; }
+}
+
+/* Très petits écrans : points et actions sur deux lignes */
+@media (max-width: 380px) {
+  .kt-item-row__points  { flex: 1 1 100%; }
+  .kt-item-row__actions { flex: 1 1 100%; margin-left: 0; }
+  .kt-item-row__actions .kt-btn { flex: 1; justify-content: center; }
+}

@@ -22,71 +22,56 @@
 </div>
 
 <%# Raccourcis actions %>
-<div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+<div class="kt-child-actions">
   <%= link_to "📅 Tableau de la semaine", child_weeks_path(@child), class: "kt-btn kt-btn--primary" %>
   <%= link_to "🎁 Points & privilèges", new_child_point_transaction_path(@child), class: "kt-btn kt-btn--ghost" %>
   <%= link_to "📋 Historique", child_point_transactions_path(@child), class: "kt-btn kt-btn--ghost" %>
 </div>
 
 <%# Items assignés %>
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem;">
+<div class="kt-section-head">
   <h2>Items assignés</h2>
   <%= link_to "Assigner un item", new_child_child_item_path(@child), class: "kt-btn kt-btn--primary kt-btn--sm" %>
 </div>
 
 <% if @child_items.empty? %>
-  <div class="kt-card" style="text-align:center; padding:2rem; color:var(--text-secondary)">
-    <p>Aucun item assigné.</p>
-    <%= link_to "Assigner un premier item", new_child_child_item_path(@child), class: "kt-btn kt-btn--primary kt-btn--sm", style: "margin-top:.75rem" %>
+  <div class="kt-empty">
+    <div class="kt-empty__icon">📋</div>
+    <p class="kt-empty__title">Aucun item assigné</p>
+    <p class="kt-empty__text">Assigne des comportements à suivre pour <%= @child.first_name %>.</p>
+    <%= link_to "Assigner un premier item", new_child_child_item_path(@child), class: "kt-btn kt-btn--primary" %>
   </div>
 <% else %>
-  <div class="kt-card" style="padding:0; overflow:hidden;">
-    <table class="kt-table">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Catégorie</th>
-          <th style="text-align:center">🟢</th>
-          <th style="text-align:center">🟡</th>
-          <th style="text-align:center">🔴</th>
-          <th style="text-align:center">Actif</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @child_items.each do |ci| %>
-          <tr>
-            <td style="font-weight:500"><%= ci.item.name %></td>
-            <td>
-              <% if ci.item.category.present? %>
-                <span class="kt-badge kt-badge--gray"><%= ci.item.category.capitalize %></span>
-              <% else %>
-                <span style="color:var(--text-tertiary)">—</span>
-              <% end %>
-            </td>
-            <td style="text-align:center">
-              <span class="kt-badge kt-badge--green"><%= ci.green_points > 0 ? "+#{ci.green_points}" : ci.green_points %></span>
-            </td>
-            <td style="text-align:center">
-              <span class="kt-badge kt-badge--yellow"><%= ci.yellow_points %></span>
-            </td>
-            <td style="text-align:center">
-              <span class="kt-badge kt-badge--red"><%= ci.red_points %></span>
-            </td>
-            <td style="text-align:center">
-              <%= ci.active? ? "✅" : "⏸️" %>
-            </td>
-            <td>
-              <div style="display:flex; gap:.4rem; justify-content:flex-end;">
-                <%= link_to "Modifier", edit_child_item_path(ci), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
-                <%= button_to "Retirer", child_item_path(ci), method: :delete,
-                    class: "kt-btn kt-btn--danger kt-btn--sm",
-                    data: { turbo_confirm: "Retirer cet item de #{@child.first_name} ?" } %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <div class="kt-item-list">
+    <% @child_items.each do |ci| %>
+      <div class="kt-item-row <%= "is-inactive" unless ci.active? %>">
+
+        <div class="kt-item-row__main">
+          <div class="kt-item-row__name"><%= ci.item.name %></div>
+          <div class="kt-item-row__meta">
+            <% if ci.item.category.present? %>
+              <span class="kt-badge kt-badge--gray"><%= ci.item.category.capitalize %></span>
+            <% end %>
+            <% unless ci.active? %>
+              <span class="kt-badge kt-badge--gray">Inactif</span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="kt-item-row__points">
+          <span class="kt-pt kt-pt--green">🟢 <%= ci.green_points > 0 ? "+#{ci.green_points}" : ci.green_points %></span>
+          <span class="kt-pt kt-pt--yellow">🟡 <%= ci.yellow_points > 0 ? "+#{ci.yellow_points}" : ci.yellow_points %></span>
+          <span class="kt-pt kt-pt--red">🔴 <%= ci.red_points > 0 ? "+#{ci.red_points}" : ci.red_points %></span>
+        </div>
+
+        <div class="kt-item-row__actions">
+          <%= link_to "Modifier", edit_child_item_path(ci), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+          <%= button_to "Retirer", child_item_path(ci), method: :delete,
+              class: "kt-btn kt-btn--danger kt-btn--sm",
+              data: { turbo_confirm: "Retirer \"#{ci.item.name}\" de #{@child.first_name} ?" } %>
+        </div>
+
+      </div>
+    <% end %>
   </div>
 <% end %>
