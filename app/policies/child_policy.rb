@@ -1,7 +1,7 @@
-# app/policies/child_policy.rb
 class ChildPolicy < ApplicationPolicy
   def index?   = true
   def show?    = owner_or_admin?
+  def stats?   = owner_or_admin?    # ← ajouter
   def create?  = true
   def update?  = owner_or_admin?
   def destroy? = owner_or_admin?

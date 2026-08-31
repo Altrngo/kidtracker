@@ -2,37 +2,48 @@
 class DayEntriesController < ApplicationController
   before_action :set_week
 
-  # PATCH /children/:child_id/weeks/:week_id/day_entries
-  # Reçoit : { child_item_id:, day_of_week:, emoji_state: }
-  # Répond en Turbo Stream ou JSON selon le client
+  # PATCH .../day_entries/:id
+  # Params : child_item_id, day_of_week, emoji_state
+  # emoji_state == "none" → l'entrée est supprimée
   def update
     child_item = @week.child.child_items.find(params[:child_item_id])
+    day        = params[:day_of_week].to_i
 
-    entry = DayEntry.set_emoji(
-      week:        @week,
-      child_item:  child_item,
-      day_of_week: params[:day_of_week].to_i,
-      emoji_state: params[:emoji_state]
-    )
+    if params[:emoji_state] == "none"
+      @week.day_entries.where(child_item: child_item, day_of_week: day).destroy_all
+    else
+      DayEntry.set_emoji(
+        week:        @week,
+        child_item:  child_item,
+        day_of_week: day,
+        emoji_state: params[:emoji_state]
+      )
+    end
 
     respond_to do |format|
       format.turbo_stream do
-        # Re-rendu de la ligne complète de l'item pour refléter la contagion
-        render turbo_stream: turbo_stream.replace(
-          "row_child_item_#{child_item.id}",
-          partial: "weeks/item_row",
-          locals: {
-            child_item: child_item,
-            week: @week,
-            entries_by_day: day_entries_for(child_item)
-          }
-        )
+        render turbo_stream: [
+          turbo_stream.replace(
+            "row_child_item_#{child_item.id}",
+            partial: "weeks/item_row",
+            locals: {
+              child_item:     child_item,
+              week:           @week,
+              entries_by_day: day_entries_for(child_item)
+            }
+          ),
+          turbo_stream.replace(
+            "week_totals",
+            partial: "weeks/totals",
+            locals: { week: @week }
+          )
+        ]
       end
-      format.json { render json: { ok: true, computed_points: entry.computed_points } }
+      format.json { render json: { ok: true } }
     end
-  rescue ActiveRecord::RecordInvalid => e
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => e
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("flash", partial: "shared/flash", locals: { message: e.message }) }
+      format.turbo_stream { head :unprocessable_entity }
       format.json { render json: { ok: false, error: e.message }, status: :unprocessable_entity }
     end
   end

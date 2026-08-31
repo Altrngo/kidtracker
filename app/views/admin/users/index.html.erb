@@ -1,15 +1,15 @@
 <%# app/views/admin/users/index.html.erb %>
-<%#
 <div class="kt-page-header">
-  <h1>⚙️ Administration — Utilisateurs</h1>
+  <h1>⚙️ Utilisateurs</h1>
   <%= link_to "Nouvel utilisateur", new_admin_user_path, class: "kt-btn kt-btn--primary kt-btn--sm" %>
 </div>
 
-<div class="kt-card" style="padding:0; overflow:hidden;">
+<div class="kt-card" style="padding:0; overflow-x:auto;">
   <table class="kt-table">
     <thead>
       <tr>
-        <th>Email</th>
+        <th>Pseudo</th>
+        <th>E-mail</th>
         <th style="text-align:center">Rôle</th>
         <th style="text-align:center">Enfants</th>
         <th></th>
@@ -18,7 +18,8 @@
     <tbody>
       <% @users.each do |user| %>
         <tr>
-          <td style="font-weight:500"><%= user.email %></td>
+          <td style="font-weight:500"><%= user.display_name %></td>
+          <td style="color:var(--text-secondary)"><%= user.email %></td>
           <td style="text-align:center">
             <% if user.admin? %>
               <span class="kt-badge kt-badge--green">Admin</span>
@@ -32,8 +33,8 @@
               <%= link_to "Modifier", edit_admin_user_path(user), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
               <% unless user == current_user %>
                 <%= button_to "Supprimer", admin_user_path(user), method: :delete,
-                    class: "kt-btn kt-btn--danger kt-btn--sm",
-                    data: { turbo_confirm: "Supprimer #{user.email} ?" } %>
+                      class: "kt-btn kt-btn--danger kt-btn--sm",
+                      data: { turbo_confirm: "Supprimer #{user.display_name} ?" } %>
               <% end %>
             </div>
           </td>

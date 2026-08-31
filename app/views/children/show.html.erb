@@ -16,22 +16,26 @@
   <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
     <%= link_to "Modifier", edit_child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
     <%= button_to "Supprimer", child_path(@child), method: :delete,
-        class: "kt-btn kt-btn--danger kt-btn--sm",
-        data: { turbo_confirm: "Supprimer #{@child.first_name} ? Cette action est irréversible." } %>
+          class: "kt-btn kt-btn--danger kt-btn--sm",
+          data: { turbo_confirm: "Supprimer #{@child.first_name} ? Cette action est irréversible." } %>
   </div>
 </div>
 
-<%# Raccourcis actions %>
 <div class="kt-child-actions">
   <%= link_to "📅 Tableau de la semaine", child_weeks_path(@child), class: "kt-btn kt-btn--primary" %>
+  <%= link_to "📊 Statistiques", stats_child_path(@child), class: "kt-btn kt-btn--ghost" %>
   <%= link_to "🎁 Points & privilèges", new_child_point_transaction_path(@child), class: "kt-btn kt-btn--ghost" %>
   <%= link_to "📋 Historique", child_point_transactions_path(@child), class: "kt-btn kt-btn--ghost" %>
 </div>
 
-<%# Items assignés %>
 <div class="kt-section-head">
   <h2>Items assignés</h2>
-  <%= link_to "Assigner un item", new_child_child_item_path(@child), class: "kt-btn kt-btn--primary kt-btn--sm" %>
+  <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+    <%= link_to "Assignation en masse", child_bulk_edit_items_path(@child),
+          class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+    <%= link_to "Assigner un item", new_child_child_item_path(@child),
+          class: "kt-btn kt-btn--primary kt-btn--sm" %>
+  </div>
 </div>
 
 <% if @child_items.empty? %>
@@ -39,7 +43,7 @@
     <div class="kt-empty__icon">📋</div>
     <p class="kt-empty__title">Aucun item assigné</p>
     <p class="kt-empty__text">Assigne des comportements à suivre pour <%= @child.first_name %>.</p>
-    <%= link_to "Assigner un premier item", new_child_child_item_path(@child), class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Assignation en masse", child_bulk_edit_items_path(@child), class: "kt-btn kt-btn--primary" %>
   </div>
 <% else %>
   <div class="kt-item-list">
@@ -67,8 +71,8 @@
         <div class="kt-item-row__actions">
           <%= link_to "Modifier", edit_child_item_path(ci), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
           <%= button_to "Retirer", child_item_path(ci), method: :delete,
-              class: "kt-btn kt-btn--danger kt-btn--sm",
-              data: { turbo_confirm: "Retirer \"#{ci.item.name}\" de #{@child.first_name} ?" } %>
+                class: "kt-btn kt-btn--danger kt-btn--sm",
+                data: { turbo_confirm: "Retirer \"#{ci.item.name}\" de #{@child.first_name} ?" } %>
         </div>
 
       </div>

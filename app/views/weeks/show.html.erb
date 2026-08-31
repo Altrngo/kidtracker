@@ -25,7 +25,7 @@
   <% end %>
 </div>
 
-<div class="kt-card" style="padding: 0; overflow: hidden;">
+<div class="kt-card" style="padding:0; overflow:hidden;">
   <div class="kt-week-wrap">
     <table class="kt-week-table">
       <thead>
@@ -37,6 +37,7 @@
           <th>Total</th>
         </tr>
       </thead>
+
       <tbody>
         <% @child_items.each do |child_item| %>
           <%= render "item_row",
@@ -47,12 +48,19 @@
                                   .transform_keys { |k| k[1] } %>
         <% end %>
       </tbody>
+
+      <%= render "totals", week: @week %>
     </table>
   </div>
 </div>
 
-<div style="margin-top: 1rem; display:flex; gap:.75rem; flex-wrap:wrap;">
+<p class="kt-stat-note">
+  Clique sur une case pour choisir 🟢 🟡 🔴, ou ✕ pour retirer l'évaluation.
+</p>
+
+<div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
   <%= link_to "Historique des semaines", child_weeks_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+  <%= link_to "Statistiques", stats_child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
   <%= link_to "Points & privilèges", new_child_point_transaction_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
   <%= link_to "Retour au profil", child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
 </div>

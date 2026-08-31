@@ -1,0 +1,25 @@
+<%# app/views/weeks/_totals.html.erb %>
+<%# locals attendues : week %>
+<tfoot id="week_totals">
+  <tr class="kt-week-totals">
+    <td>Total du jour</td>
+
+    <% (0..6).each do |day| %>
+      <% t   = week.day_entries.where(day_of_week: day).sum(:computed_points) %>
+      <% css = t > 0 ? "pos" : t < 0 ? "neg" : "zero" %>
+      <td>
+        <span class="kt-row-score kt-row-score--<%= css %>">
+          <%= t > 0 ? "+#{t}" : t %>
+        </span>
+      </td>
+    <% end %>
+
+    <% grand = week.day_entries.sum(:computed_points) %>
+    <% gcss  = grand > 0 ? "pos" : grand < 0 ? "neg" : "zero" %>
+    <td>
+      <span class="kt-row-score kt-row-score--<%= gcss %>" style="font-weight:700">
+        <%= grand > 0 ? "+#{grand}" : grand %>
+      </span>
+    </td>
+  </tr>
+</tfoot>

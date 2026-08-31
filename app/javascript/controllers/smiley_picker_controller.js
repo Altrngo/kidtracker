@@ -1,20 +1,4 @@
 // app/javascript/controllers/smiley_picker_controller.js
-//
-// Usage sur chaque cellule du tableau :
-//
-// <div data-controller="smiley-picker"
-//      data-smiley-picker-state-value="green"
-//      data-smiley-picker-url-value="<%= child_week_day_entries_path(...) %>"
-//      data-smiley-picker-child-item-id-value="<%= child_item.id %>"
-//      data-smiley-picker-day-value="<%= day %>">
-//   <button data-smiley-picker-target="btn" data-action="click->smiley-picker#toggle">🟢</button>
-//   <div data-smiley-picker-target="popup" class="kt-smiley-popup">
-//     <button class="kt-smiley-popup__btn" data-pick="green"  data-action="click->smiley-picker#pick">🟢</button>
-//     <button class="kt-smiley-popup__btn" data-pick="yellow" data-action="click->smiley-picker#pick">🟡</button>
-//     <button class="kt-smiley-popup__btn" data-pick="red"    data-action="click->smiley-picker#pick">🔴</button>
-//   </div>
-// </div>
-
 import { Controller } from "@hotwired/stimulus"
 
 const EMOJI = { green: "🟢", yellow: "🟡", red: "🔴", "": "—" }
@@ -25,7 +9,6 @@ export default class extends Controller {
 
   connect() {
     this.#render()
-    // Ferme le popup si clic en dehors
     this._outsideHandler = (e) => {
       if (!this.element.contains(e.target)) this.#close()
     }
@@ -39,21 +22,20 @@ export default class extends Controller {
   toggle(e) {
     e.stopPropagation()
     const isOpen = this.popupTarget.classList.contains("is-open")
-    // Ferme tous les autres popups ouverts
-    document.querySelectorAll(".kt-smiley-popup.is-open").forEach(p => p.classList.remove("is-open"))
+    document.querySelectorAll(".kt-smiley-popup.is-open")
+            .forEach(p => p.classList.remove("is-open"))
     if (!isOpen) this.popupTarget.classList.add("is-open")
   }
 
   async pick(e) {
     e.stopPropagation()
-    const state = e.currentTarget.dataset.pick
+    const state = e.currentTarget.dataset.pick   // green | yellow | red | none
     this.#close()
 
-    // Optimistic UI : mise à jour immédiate
-    this.stateValue = state
+    // Affichage optimiste : la case réagit immédiatement
+    this.stateValue = (state === "none") ? "" : state
     this.#render()
 
-    // Envoi au serveur
     const token = document.querySelector("meta[name='csrf-token']")?.content
     const body  = new URLSearchParams({
       child_item_id: this.childItemIdValue,
@@ -66,25 +48,32 @@ export default class extends Controller {
         method:  "PATCH",
         headers: {
           "X-CSRF-Token": token,
-          "Accept":       "text/vnd.turbo-stream.html, text/html",
+          "Accept":       "text/vnd.turbo-stream.html",
           "Content-Type": "application/x-www-form-urlencoded"
         },
         body
       })
-      if (!resp.ok) throw new Error("Erreur serveur")
-      // Si Turbo Stream, Turbo le gère automatiquement
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+
+      // Indispensable : sans ceci, la contagion des jaunes et les totaux
+      // ne seraient visibles qu'après rechargement de la page.
+      const html = await resp.text()
+      if (html.trim()) window.Turbo.renderStreamMessage(html)
+
     } catch (err) {
-      console.error("Smiley update failed:", err)
+      console.error("Échec de mise à jour du smiley :", err)
+      this.btnTarget.classList.add("is-error")
+      setTimeout(() => this.btnTarget.classList.remove("is-error"), 1200)
     }
   }
 
-  // ── Privé ──────────────────────────────────────────────────
   #close() {
     this.popupTarget.classList.remove("is-open")
   }
 
   #render() {
-    this.btnTarget.textContent   = EMOJI[this.stateValue] || "—"
+    this.btnTarget.textContent   = EMOJI[this.stateValue] ?? "—"
     this.btnTarget.dataset.state = this.stateValue
   }
 }

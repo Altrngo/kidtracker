@@ -1,0 +1,144 @@
+<%# app/views/stats/index.html.erb %>
+
+<div class="kt-page-header">
+  <div>
+    <h1>Comparaison</h1>
+    <div style="font-size:.85rem; color:var(--text-secondary)">
+      Vue d'ensemble de tous les enfants
+    </div>
+  </div>
+</div>
+
+<% if @stats.empty? %>
+
+  <div class="kt-empty">
+    <div class="kt-empty__icon">📊</div>
+    <p class="kt-empty__title">Aucun enfant à comparer</p>
+  </div>
+
+<% else %>
+
+  <div class="kt-card kt-stat-block" style="padding:0; overflow-x:auto;">
+    <table class="kt-table kt-compare-table">
+      <thead>
+        <tr>
+          <th>Enfant</th>
+          <th>Solde</th>
+          <th>Réussite</th>
+          <th>Moy./sem.</th>
+          <th>🟢</th>
+          <th>🟡</th>
+          <th>🔴</th>
+          <th>Privilèges</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @stats.each do |child, s| %>
+          <% color = child_color_name(child.avatar_color) %>
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:.6rem;">
+                <div class="kt-child-avatar" data-color="<%= color %>"
+                     style="width:30px;height:30px;font-size:.8rem;margin:0;">
+                  <%= child.first_name[0].upcase %>
+                </div>
+                <%= link_to child.first_name, stats_child_path(child), style: "font-weight:500" %>
+              </div>
+            </td>
+            <td><strong><%= child.total_points %></strong></td>
+            <td>
+              <span class="kt-badge <%= s.success_rate >= 70 ? 'kt-badge--green' : s.success_rate >= 40 ? 'kt-badge--yellow' : 'kt-badge--red' %>">
+                <%= s.success_rate %>%
+              </span>
+            </td>
+            <td class="<%= s.average_week_score.negative? ? 'kt-tx-amount--neg' : 'kt-tx-amount--pos' %>">
+              <%= s.average_week_score > 0 ? "+#{s.average_week_score}" : s.average_week_score %>
+            </td>
+            <td><%= s.green %></td>
+            <td><%= s.yellow %></td>
+            <td><%= s.red %></td>
+            <td><%= s.privileges_redeemed %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Taux de réussite</h2>
+    <div class="kt-hbars">
+      <% @stats.sort_by { |_, s| -s.success_rate }.each do |child, s| %>
+        <div class="kt-hbar">
+          <div class="kt-hbar__label"><%= child.first_name %></div>
+          <div class="kt-hbar__track">
+            <div class="kt-hbar__fill" data-color="<%= child_color_name(child.avatar_color) %>"
+                 style="width: <%= s.success_rate %>%"></div>
+          </div>
+          <div class="kt-hbar__value"><%= s.success_rate %>%</div>
+        </div>
+      <% end %>
+    </div>
+    <p class="kt-stat-note">
+      Part de 🟢 sur l'ensemble des cases renseignées. À interpréter avec prudence :
+      les items assignés et leurs barèmes diffèrent d'un enfant à l'autre.
+    </p>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Répartition des évaluations</h2>
+    <% @stats.each do |child, s| %>
+      <div class="kt-compare-row">
+        <div class="kt-compare-row__name"><%= child.first_name %></div>
+        <div class="kt-stack-bar kt-stack-bar--sm">
+          <% if s.total_entries.zero? %>
+            <div class="kt-stack-bar__seg is-empty" style="width:100%">aucune donnée</div>
+          <% else %>
+            <% if s.green.positive? %>
+              <div class="kt-stack-bar__seg is-green" style="width:<%= s.share('green') %>%"></div>
+            <% end %>
+            <% if s.yellow.positive? %>
+              <div class="kt-stack-bar__seg is-yellow" style="width:<%= s.share('yellow') %>%"></div>
+            <% end %>
+            <% if s.red.positive? %>
+              <div class="kt-stack-bar__seg is-red" style="width:<%= s.share('red') %>%"></div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <div class="kt-stack-legend">
+      <span><i class="is-green"></i> Vert</span>
+      <span><i class="is-yellow"></i> Jaune</span>
+      <span><i class="is-red"></i> Rouge</span>
+    </div>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Score hebdomadaire</h2>
+    <% all  = @stats.flat_map { |_, s| s.weekly_scores.map { |w| w[:score].abs } } %>
+    <% gmax = [(all.max || 1), 1].max %>
+    <% @stats.each do |child, s| %>
+      <% next if s.weekly_scores.empty? %>
+      <div class="kt-compare-chart">
+        <div class="kt-compare-row__name"><%= child.first_name %></div>
+        <div class="kt-bars kt-bars--compact">
+          <% s.weekly_scores.each do |w| %>
+            <% h = (w[:score].abs * 100.0 / gmax).round %>
+            <div class="kt-bars__col" title="<%= w[:label] %> : <%= w[:score] %> pts">
+              <div class="kt-bars__half kt-bars__half--pos">
+                <% if w[:score] > 0 %><div class="kt-bars__bar is-pos" style="height:<%= h %>%"></div><% end %>
+              </div>
+              <div class="kt-bars__axis"></div>
+              <div class="kt-bars__half kt-bars__half--neg">
+                <% if w[:score] < 0 %><div class="kt-bars__bar is-neg" style="height:<%= h %>%"></div><% end %>
+              </div>
+              <div class="kt-bars__label"><%= w[:label] %></div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <p class="kt-stat-note">Échelle commune à tous les enfants pour rendre la comparaison valide.</p>
+  </div>
+
+<% end %>

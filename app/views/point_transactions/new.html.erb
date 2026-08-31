@@ -1,69 +1,133 @@
 <%# app/views/point_transactions/new.html.erb %>
-
 <% color = child_color_name(@child.avatar_color) %>
 
 <div class="kt-page-header">
   <div style="display:flex; align-items:center; gap:.75rem;">
-    <div class="kt-child-avatar" data-color="<%= color %>" style="width:38px;height:38px;font-size:.95rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:40px;height:40px;font-size:1rem;">
       <%= @child.first_name[0].upcase %>
     </div>
     <div>
       <h1>Points — <%= @child.first_name %></h1>
-      <div style="font-size:.85rem; color:var(--text-secondary);">
-        Solde actuel : <strong style="color:var(--text-primary)"><%= @child.total_points %> pts</strong>
+      <div style="font-size:.85rem; color:var(--text-secondary)">
+        Solde disponible :
+        <strong style="color:var(--text-primary)" id="child-balance"
+                data-balance="<%= @child.total_points %>"><%= @child.total_points %> pts</strong>
       </div>
     </div>
   </div>
+  <%= link_to "Historique", child_point_transactions_path(@child),
+        class: "kt-btn kt-btn--ghost kt-btn--sm" %>
 </div>
 
-<%# Rachat de privilège %>
-<div class="kt-card" style="margin-bottom:1.25rem;">
-  <h2 style="margin-bottom:1rem;">🎁 Acheter un privilège</h2>
+<h2 class="kt-stat-title">🎁 Racheter un privilège</h2>
 
-  <% if @privileges.empty? %>
-    <p style="color:var(--text-secondary); font-size:.875rem;">
-      Aucun privilège disponible.
-      <%= link_to "En créer un", new_privilege_path %>
-    </p>
-  <% else %>
-    <div class="kt-privilege-grid" style="margin-bottom:1rem;">
-      <% @privileges.each do |p| %>
-        <div class="kt-privilege-card" style="<%= @child.total_points >= p.point_cost ? '' : 'opacity:.5' %>">
-          <div class="kt-privilege-name"><%= p.name %></div>
-          <div class="kt-privilege-cost">
-            <%= p.point_cost %><span class="kt-privilege-cost__unit">pts</span>
-          </div>
-          <%= form_with url: child_point_transactions_path(@child), method: :post do |f| %>
-            <%= hidden_field_tag "point_transaction[privilege_id]", p.id %>
-            <%= f.submit "Racheter",
-                class: "kt-btn kt-btn--success kt-btn--sm",
-                disabled: @child.total_points < p.point_cost,
-                style: "margin-top:.5rem; width:100%",
-                data: { turbo_confirm: "Accorder \"#{p.name}\" à #{@child.first_name} pour #{p.point_cost} pts ?" } %>
-          <% end %>
+<% if @privileges.empty? %>
+  <div class="kt-empty">
+    <div class="kt-empty__icon">🎁</div>
+    <p class="kt-empty__title">Aucun privilège disponible</p>
+    <%= link_to "Créer un privilège", new_privilege_path, class: "kt-btn kt-btn--primary" %>
+  </div>
+<% else %>
+  <div class="kt-redeem-grid">
+    <% @privileges.each do |p| %>
+      <% max_qty = p.affordable_quantity(@child.total_points) %>
+      <div class="kt-redeem-card <%= 'is-locked' if max_qty.zero? %>"
+           data-cost="<%= p.point_cost %>">
+
+        <div class="kt-redeem-card__name"><%= p.name %></div>
+        <div class="kt-redeem-card__cost">
+          <%= p.point_cost %><span>pts / unité</span>
         </div>
-      <% end %>
-    </div>
-  <% end %>
-</div>
 
-<%# Ajustement manuel %>
+        <%= form_with url: child_point_transactions_path(@child), method: :post,
+              class: "kt-redeem-form", data: { cost: p.point_cost } do %>
+          <%= hidden_field_tag "point_transaction[privilege_id]", p.id %>
+
+          <% if max_qty.zero? %>
+            <p class="kt-redeem-card__locked">
+              Solde insuffisant — il manque <%= p.point_cost - @child.total_points %> pts
+            </p>
+          <% else %>
+            <div class="kt-qty">
+              <button type="button" class="kt-qty__btn" data-qty="minus" aria-label="Moins">−</button>
+              <input type="number"
+                     name="point_transaction[quantity]"
+                     class="kt-qty__input"
+                     value="1" min="1" max="<%= max_qty %>"
+                     data-cost="<%= p.point_cost %>">
+              <button type="button" class="kt-qty__btn" data-qty="plus" aria-label="Plus">+</button>
+            </div>
+
+            <div class="kt-redeem-card__total">
+              Total : <strong class="kt-redeem-total"><%= p.point_cost %></strong> pts
+              <span class="kt-redeem-card__max">(max <%= max_qty %>)</span>
+            </div>
+
+            <%= submit_tag "Racheter",
+                  class: "kt-btn kt-btn--success kt-redeem-submit",
+                  data: { turbo_confirm: "Confirmer le rachat pour #{@child.first_name} ?" } %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<h2 class="kt-stat-title" style="margin-top:2rem">✏️ Ajustement manuel</h2>
+
 <div class="kt-card">
-  <h2 style="margin-bottom:1rem;">✏️ Ajustement manuel</h2>
-  <%= form_with url: child_point_transactions_path(@child), method: :post do |f| %>
+  <%= form_with url: child_point_transactions_path(@child), method: :post do %>
     <div class="kt-form-group">
-      <%= label_tag "point_transaction[amount]", "Points (négatif pour retrait)", class: "kt-label" %>
+      <%= label_tag "point_transaction[amount]", "Points (négatif pour retirer)", class: "kt-label" %>
       <%= number_field_tag "point_transaction[amount]", nil,
-          class: "kt-input", placeholder: "Ex : +5 ou -3", style: "max-width:160px" %>
+            class: "kt-input", placeholder: "Ex : 5 ou -3", style: "max-width:180px" %>
     </div>
     <div class="kt-form-group">
       <%= label_tag "point_transaction[reason]", "Motif", class: "kt-label" %>
       <%= text_field_tag "point_transaction[reason]", nil,
-          class: "kt-input", placeholder: "Ex : Bonne conduite exceptionnelle" %>
+            class: "kt-input", placeholder: "Ex : A aidé sans qu'on lui demande" %>
     </div>
     <div style="display:flex; gap:.75rem;">
-      <%= f.submit "Enregistrer", class: "kt-btn kt-btn--primary" %>
-      <%= link_to "Annuler", child_point_transactions_path(@child), class: "kt-btn kt-btn--ghost" %>
+      <%= submit_tag "Enregistrer", class: "kt-btn kt-btn--primary" %>
+      <%= link_to "Annuler", child_path(@child), class: "kt-btn kt-btn--ghost" %>
     </div>
   <% end %>
 </div>
+
+<script>
+  (function () {
+    function updateTotal(form) {
+      const input = form.querySelector(".kt-qty__input");
+      const out   = form.querySelector(".kt-redeem-total");
+      if (!input || !out) return;
+
+      const cost = parseInt(input.dataset.cost, 10);
+      let qty    = parseInt(input.value, 10);
+      const max  = parseInt(input.max, 10);
+
+      if (isNaN(qty) || qty < 1) qty = 1;
+      if (qty > max) qty = max;
+      input.value = qty;
+
+      out.textContent = cost * qty;
+    }
+
+    document.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-qty]");
+      if (!btn) return;
+
+      const form  = btn.closest(".kt-redeem-form");
+      const input = form.querySelector(".kt-qty__input");
+      const step  = btn.dataset.qty === "plus" ? 1 : -1;
+
+      input.value = parseInt(input.value, 10) + step;
+      updateTotal(form);
+    });
+
+    document.addEventListener("input", function (e) {
+      if (e.target.classList.contains("kt-qty__input")) {
+        updateTotal(e.target.closest(".kt-redeem-form"));
+      }
+    });
+  })();
+</script>

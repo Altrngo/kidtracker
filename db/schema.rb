@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_131602) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_153822) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -65,10 +65,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_131602) do
     t.bigint "child_id", null: false
     t.datetime "created_at", null: false
     t.bigint "privilege_id"
+    t.integer "quantity", default: 1, null: false
     t.string "reason", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.index ["child_id"], name: "index_point_transactions_on_child_id"
     t.index ["privilege_id"], name: "index_point_transactions_on_privilege_id"
+    t.index ["user_id"], name: "index_point_transactions_on_user_id"
   end
 
   create_table "privileges", force: :cascade do |t|
@@ -93,9 +96,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_131602) do
     t.string "reset_password_token"
     t.string "unlock_token"
     t.datetime "updated_at", null: false
+    t.string "username", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
   end
 
   create_table "weeks", force: :cascade do |t|
@@ -116,7 +121,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_131602) do
   add_foreign_key "day_entries", "weeks"
   add_foreign_key "items", "users"
   add_foreign_key "point_transactions", "children"
-  add_foreign_key "point_transactions", "privileges"
+  add_foreign_key "point_transactions", "privileges", on_delete: :nullify
+  add_foreign_key "point_transactions", "users"
   add_foreign_key "privileges", "users"
   add_foreign_key "weeks", "children"
 end

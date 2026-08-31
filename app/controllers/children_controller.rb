@@ -1,13 +1,20 @@
 # app/controllers/children_controller.rb
 class ChildrenController < ApplicationController
-  before_action :set_child, only: %i[show edit update destroy]
+  before_action :set_child, only: %i[show edit update destroy stats]
 
   def index
     @children = policy_scope(Child)
   end
 
   def show
-    @child_items = @child.child_items.includes(:item).active
+    @child_items = @child.child_items
+                         .includes(:item)
+                         .joins(:item)
+                         .order("child_items.active DESC, items.category, items.name")
+  end
+
+  def stats
+    @stats = ChildStats.new(@child)
   end
 
   def new
@@ -26,8 +33,7 @@ class ChildrenController < ApplicationController
     end
   end
 
-  def edit
-  end
+  def edit; end
 
   def update
     if @child.update(child_params)

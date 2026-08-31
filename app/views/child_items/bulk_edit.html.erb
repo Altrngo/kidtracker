@@ -1,0 +1,114 @@
+<%# app/views/child_items/bulk_edit.html.erb %>
+<% color = child_color_name(@child.avatar_color) %>
+
+<div class="kt-page-header">
+  <div style="display:flex; align-items:center; gap:.75rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:40px;height:40px;font-size:1rem;">
+      <%= @child.first_name[0].upcase %>
+    </div>
+    <div>
+      <h1>Assignation en masse</h1>
+      <div style="font-size:.85rem; color:var(--text-secondary)">
+        Coche les comportements à suivre pour <%= @child.first_name %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= form_with url: child_bulk_update_items_path(@child), method: :patch do %>
+
+  <div class="kt-bulk-toolbar">
+    <button type="button" class="kt-btn kt-btn--ghost kt-btn--sm" data-bulk="all">Tout cocher</button>
+    <button type="button" class="kt-btn kt-btn--ghost kt-btn--sm" data-bulk="none">Tout décocher</button>
+    <span class="kt-bulk-count"><span id="bulk-count">0</span> sélectionné(s)</span>
+  </div>
+
+  <% @items.group_by(&:category).each do |category, items| %>
+    <div class="kt-bulk-group">
+      <div class="kt-bulk-group__head">
+        <span><%= category.presence&.capitalize || "Sans catégorie" %></span>
+        <button type="button" class="kt-bulk-group__toggle"
+                data-bulk-group="<%= category.presence || 'none' %>">Inverser</button>
+      </div>
+
+      <div class="kt-bulk-list">
+        <% items.each do |item| %>
+          <% ci      = @child_items[item.id] %>
+          <% checked = @checked_ids.include?(item.id) %>
+          <label class="kt-bulk-item <%= 'is-checked' if checked %>">
+            <input type="checkbox"
+                   name="item_ids[]"
+                   value="<%= item.id %>"
+                   class="kt-bulk-checkbox"
+                   data-group="<%= item.category.presence || 'none' %>"
+                   <%= "checked" if checked %>>
+            <span class="kt-bulk-item__box"></span>
+            <span class="kt-bulk-item__body">
+              <span class="kt-bulk-item__name"><%= item.name %></span>
+              <% if ci %>
+                <span class="kt-bulk-item__pts">
+                  🟢 <%= ci.green_points > 0 ? "+#{ci.green_points}" : ci.green_points %> ·
+                  🟡 <%= ci.yellow_points %> ·
+                  🔴 <%= ci.red_points %>
+                  <% if ci.day_entries.exists? %>
+                    <span class="kt-badge kt-badge--gray">historique</span>
+                  <% end %>
+                </span>
+              <% else %>
+                <span class="kt-bulk-item__pts kt-bulk-item__pts--new">
+                  nouveau — valeurs par défaut 🟢 +1 · 🟡 0 · 🔴 −1
+                </span>
+              <% end %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="kt-bulk-footer">
+    <%= submit_tag "Enregistrer", class: "kt-btn kt-btn--primary" %>
+    <%= link_to "Annuler", child_path(@child), class: "kt-btn kt-btn--ghost" %>
+  </div>
+
+  <p class="kt-bulk-note">
+    Un item décoché qui possède déjà un historique est <strong>désactivé</strong> et non supprimé :
+    il disparaît des tableaux à venir, mais ses évaluations passées restent consultables
+    dans les semaines archivées et dans les statistiques.
+  </p>
+<% end %>
+
+<script>
+  (function () {
+    const boxes = () => Array.from(document.querySelectorAll(".kt-bulk-checkbox"));
+
+    function refresh() {
+      const el = document.getElementById("bulk-count");
+      if (!el) return;
+      el.textContent = boxes().filter(b => b.checked).length;
+      boxes().forEach(b => b.closest(".kt-bulk-item").classList.toggle("is-checked", b.checked));
+    }
+
+    document.addEventListener("click", function (e) {
+      const bulk = e.target.closest("[data-bulk]");
+      if (bulk) {
+        boxes().forEach(b => b.checked = bulk.dataset.bulk === "all");
+        refresh();
+      }
+      const group = e.target.closest("[data-bulk-group]");
+      if (group) {
+        boxes()
+          .filter(b => b.dataset.group === group.dataset.bulkGroup)
+          .forEach(b => b.checked = !b.checked);
+        refresh();
+      }
+    });
+
+    document.addEventListener("change", function (e) {
+      if (e.target.classList.contains("kt-bulk-checkbox")) refresh();
+    });
+
+    document.addEventListener("turbo:load", refresh);
+    refresh();
+  })();
+</script>

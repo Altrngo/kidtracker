@@ -1,5 +1,5 @@
 <%# app/views/weeks/_item_row.html.erb %>
-<%# locals: child_item, week, entries_by_day (Hash day_of_week => DayEntry) %>
+<%# locals attendues : child_item, week, entries_by_day %>
 <tr id="row_child_item_<%= child_item.id %>">
   <td>
     <div class="kt-item-name"><%= child_item.item.name %></div>
@@ -16,12 +16,10 @@
       <% state = entry&.emoji_state.to_s %>
 
       <% if week.finalized? %>
-        <%# Semaine verrouillée : affichage seul %>
         <span class="kt-smiley-btn" data-state="<%= state %>">
           <%= state == "green" ? "🟢" : state == "yellow" ? "🟡" : state == "red" ? "🔴" : "—" %>
         </span>
       <% else %>
-        <%# Smiley interactif avec popup %>
         <div data-controller="smiley-picker"
              data-smiley-picker-state-value="<%= state %>"
              data-smiley-picker-url-value="<%= child_week_day_entry_path(week.child, week, 0) %>"
@@ -38,18 +36,20 @@
 
           <div class="kt-smiley-popup" data-smiley-picker-target="popup">
             <button class="kt-smiley-popup__btn" data-pick="green"
-                    data-action="click->smiley-picker#pick" type="button">🟢</button>
+                    data-action="click->smiley-picker#pick" type="button" title="Vert">🟢</button>
             <button class="kt-smiley-popup__btn" data-pick="yellow"
-                    data-action="click->smiley-picker#pick" type="button">🟡</button>
+                    data-action="click->smiley-picker#pick" type="button" title="Jaune">🟡</button>
             <button class="kt-smiley-popup__btn" data-pick="red"
-                    data-action="click->smiley-picker#pick" type="button">🔴</button>
+                    data-action="click->smiley-picker#pick" type="button" title="Rouge">🔴</button>
+            <span class="kt-smiley-popup__sep"></span>
+            <button class="kt-smiley-popup__btn kt-smiley-popup__btn--clear" data-pick="none"
+                    data-action="click->smiley-picker#pick" type="button" title="Retirer">✕</button>
           </div>
         </div>
       <% end %>
     </td>
   <% end %>
 
-  <%# Total ligne %>
   <td>
     <% total = entries_by_day.values.sum(&:computed_points) %>
     <% css = total > 0 ? "pos" : total < 0 ? "neg" : "zero" %>

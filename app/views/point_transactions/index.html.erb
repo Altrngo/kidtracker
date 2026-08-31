@@ -3,58 +3,47 @@
 
 <div class="kt-page-header">
   <div style="display:flex; align-items:center; gap:.75rem;">
-    <div class="kt-child-avatar" data-color="<%= color %>" style="width:38px;height:38px;font-size:.95rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:40px;height:40px;font-size:1rem;">
       <%= @child.first_name[0].upcase %>
     </div>
     <div>
       <h1>Historique — <%= @child.first_name %></h1>
-      <div style="font-size:.85rem; color:var(--text-secondary);">
+      <div style="font-size:.85rem; color:var(--text-secondary)">
         Solde actuel : <strong style="color:var(--text-primary)"><%= @child.total_points %> pts</strong>
       </div>
     </div>
   </div>
-  <%= link_to "Nouveau mouvement", new_child_point_transaction_path(@child), class: "kt-btn kt-btn--primary kt-btn--sm" %>
+  <%= link_to "Nouveau mouvement", new_child_point_transaction_path(@child),
+        class: "kt-btn kt-btn--primary kt-btn--sm" %>
 </div>
 
 <% if @transactions.empty? %>
-  <div class="kt-card" style="text-align:center; padding:2.5rem; color:var(--text-secondary)">
-    <p>Aucune transaction enregistrée.</p>
+  <div class="kt-empty">
+    <div class="kt-empty__icon">📋</div>
+    <p class="kt-empty__title">Aucune transaction</p>
+    <p class="kt-empty__text">Les points crédités et dépensés apparaîtront ici.</p>
   </div>
 <% else %>
-  <div class="kt-card" style="padding:0; overflow:hidden;">
-    <table class="kt-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Motif</th>
-          <th style="text-align:right">Points</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @transactions.each do |tx| %>
-          <tr>
-            <td style="color:var(--text-secondary); font-size:.8rem; white-space:nowrap;">
-              <%= tx.created_at.strftime("%d/%m/%Y") %>
-            </td>
-            <td>
-              <% if tx.redemption? %>
-                <span style="margin-right:.35rem;">🎁</span>
-              <% elsif tx.amount.positive? %>
-                <span style="margin-right:.35rem;">⭐</span>
-              <% else %>
-                <span style="margin-right:.35rem;">✏️</span>
-              <% end %>
-              <%= tx.label %>
-            </td>
-            <td style="text-align:right;">
-              <span class="kt-tx-amount <%= tx_class(tx.amount) %>">
-                <%= tx.sign %>
-              </span>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <div class="kt-tx-list">
+    <% @transactions.each do |tx| %>
+      <div class="kt-tx">
+        <div class="kt-tx__icon"><%= tx.icon %></div>
+
+        <div class="kt-tx__body">
+          <div class="kt-tx__label"><%= tx.label %></div>
+          <div class="kt-tx__meta">
+            <%= l(tx.created_at, format: :short) rescue tx.created_at.strftime("%d/%m/%Y à %H:%M") %>
+            <% if tx.user %>
+              · par <span class="kt-tx__author"><%= tx.user.display_name %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="kt-tx__amount <%= tx_class(tx.amount) %>">
+          <%= tx.sign %>
+        </div>
+      </div>
+    <% end %>
   </div>
 <% end %>
 

@@ -3,20 +3,17 @@ class PointTransactionsController < ApplicationController
   before_action :set_child
 
   def index
-    @transactions = @child.point_transactions.recent.includes(:privilege)
+    @transactions = @child.point_transactions
+                          .recent
+                          .includes(:privilege, :user)
   end
 
-  # GET — formulaire de rachat d'un privilège
   def new
-    authorize @child, :show?
-    @privileges   = policy_scope(Privilege).active.order(:point_cost)
-    @transaction  = PointTransaction.new
+    @privileges  = policy_scope(Privilege).active.order(:point_cost)
+    @transaction = PointTransaction.new
   end
 
-  # POST — effectue le rachat ou l'ajustement
   def create
-    authorize @child, :show?
-
     if params[:point_transaction][:privilege_id].present?
       redeem_privilege
     else
@@ -31,30 +28,40 @@ class PointTransactionsController < ApplicationController
     authorize @child, :show?
   end
 
+  # ── Rachat d'un privilège, en une ou plusieurs unités ─────────
   def redeem_privilege
     privilege = policy_scope(Privilege).find(params[:point_transaction][:privilege_id])
+    quantity  = params[:point_transaction][:quantity].to_i
+    quantity  = 1 if quantity < 1
 
-    if @child.total_points < privilege.point_cost
+    total_cost = privilege.point_cost * quantity
+
+    if @child.total_points < total_cost
       redirect_to new_child_point_transaction_path(@child),
-        alert: "Solde insuffisant (#{@child.total_points} pts) pour ce privilège (#{privilege.point_cost} pts)."
+        alert: "Solde insuffisant : #{total_cost} pts nécessaires, " \
+               "#{@child.first_name} en a #{@child.total_points}."
       return
     end
 
+    label = quantity > 1 ? "#{privilege.name} ×#{quantity}" : privilege.name
+
     ActiveRecord::Base.transaction do
-      tx = @child.point_transactions.create!(
+      @child.point_transactions.create!(
         privilege: privilege,
-        amount:    -privilege.point_cost,
-        reason:    "Rachat : #{privilege.name}"
+        quantity:  quantity,
+        amount:    -total_cost,
+        reason:    "Rachat : #{label}",
+        user:      current_user
       )
-      @child.decrement!(:total_points, privilege.point_cost)
+      @child.decrement!(:total_points, total_cost)
     end
 
     redirect_to child_point_transactions_path(@child),
-      notice: "Privilège \"#{privilege.name}\" accordé ! −#{privilege.point_cost} pts."
+      notice: "#{label} accordé à #{@child.first_name} — #{total_cost} pts déduits."
   end
 
+  # ── Ajustement manuel ────────────────────────────────────────
   def manual_adjustment
-    # Réservé à l'admin ou au parent propriétaire de l'enfant
     amount = params[:point_transaction][:amount].to_i
     reason = params[:point_transaction][:reason].presence || "Ajustement manuel"
 
@@ -65,7 +72,12 @@ class PointTransactionsController < ApplicationController
     end
 
     ActiveRecord::Base.transaction do
-      @child.point_transactions.create!(amount: amount, reason: reason)
+      @child.point_transactions.create!(
+        amount:   amount,
+        reason:   reason,
+        quantity: 1,
+        user:     current_user
+      )
       @child.increment!(:total_points, amount)
     end
 

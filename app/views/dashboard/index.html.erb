@@ -2,7 +2,7 @@
 
 <div class="kt-hero">
   <div>
-    <h1 class="kt-hero__title">Bonjour 👋</h1>
+    <h1 class="kt-hero__title">Bonjour <%= current_user.display_name %> 👋</h1>
     <p class="kt-hero__date"><%= l(@today, format: :long) rescue @today.strftime("%d/%m/%Y") %></p>
   </div>
   <%= link_to "Ajouter un enfant", new_child_path, class: "kt-btn kt-btn--primary" %>
@@ -31,19 +31,27 @@
           <div class="kt-child-avatar" data-color="<%= color %>">
             <%= child.first_name[0].upcase %>
           </div>
-          <div class="kt-dash-card__ident">
+          <div>
             <div class="kt-dash-card__name"><%= child.first_name %></div>
             <div class="kt-dash-card__sub"><%= s[:today_total] %> items suivis</div>
           </div>
         </div>
 
-        <div class="kt-dash-stats">
+        <div class="kt-dash-stats kt-dash-stats--3">
           <div class="kt-dash-stat">
             <div class="kt-dash-stat__label">Solde</div>
             <div class="kt-dash-stat__value"><%= child.total_points %><span>pts</span></div>
           </div>
+
           <div class="kt-dash-stat">
-            <div class="kt-dash-stat__label">Cette semaine</div>
+            <div class="kt-dash-stat__label">Aujourd'hui</div>
+            <div class="kt-dash-stat__value <%= s[:today_score].negative? ? 'is-neg' : s[:today_score].positive? ? 'is-pos' : '' %>">
+              <%= s[:today_score] > 0 ? "+#{s[:today_score]}" : s[:today_score] %><span>pts</span>
+            </div>
+          </div>
+
+          <div class="kt-dash-stat">
+            <div class="kt-dash-stat__label">Semaine</div>
             <div class="kt-dash-stat__value <%= s[:week_score].negative? ? 'is-neg' : s[:week_score].positive? ? 'is-pos' : '' %>">
               <%= s[:week_score] > 0 ? "+#{s[:week_score]}" : s[:week_score] %><span>pts</span>
             </div>
@@ -52,7 +60,7 @@
 
         <div class="kt-dash-progress">
           <div class="kt-dash-progress__head">
-            <span>Aujourd'hui</span>
+            <span>Items renseignés aujourd'hui</span>
             <strong><%= s[:today_filled] %>/<%= s[:today_total] %></strong>
           </div>
           <div class="kt-dash-progress__track">
@@ -61,10 +69,12 @@
         </div>
 
         <div class="kt-dash-actions">
-          <%= link_to "Tableau de la semaine", child_week_path(child, s[:week]),
+          <%= link_to "Tableau", child_week_path(child, s[:week]),
                 class: "kt-btn kt-btn--primary kt-btn--sm" %>
           <%= link_to "Points", new_child_point_transaction_path(child),
                 class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+          <%= link_to "📊", stats_child_path(child),
+                class: "kt-btn kt-btn--ghost kt-btn--sm", title: "Statistiques" %>
         </div>
 
       </div>
@@ -72,6 +82,13 @@
   </div>
 
   <div class="kt-quick-links">
+    <%= link_to stats_path, class: "kt-quick-link" do %>
+      <span class="kt-quick-link__icon">📊</span>
+      <span>
+        <strong>Comparaison</strong>
+        <em>Statistiques de tous les enfants</em>
+      </span>
+    <% end %>
     <%= link_to items_path, class: "kt-quick-link" do %>
       <span class="kt-quick-link__icon">📋</span>
       <span>

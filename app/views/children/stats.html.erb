@@ -1,0 +1,210 @@
+<%# app/views/children/stats.html.erb %>
+<% color = child_color_name(@child.avatar_color) %>
+<% s = @stats %>
+
+<div class="kt-page-header">
+  <div style="display:flex; align-items:center; gap:.85rem;">
+    <div class="kt-child-avatar" data-color="<%= color %>" style="width:46px;height:46px;font-size:1.1rem;">
+      <%= @child.first_name[0].upcase %>
+    </div>
+    <div>
+      <h1>Statistiques — <%= @child.first_name %></h1>
+      <div style="font-size:.85rem; color:var(--text-secondary)">
+        <%= s.total_entries %> évaluations enregistrées
+      </div>
+    </div>
+  </div>
+  <%= link_to "Comparer les enfants", stats_path, class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+</div>
+
+<% if s.total_entries.zero? %>
+
+  <div class="kt-empty">
+    <div class="kt-empty__icon">📊</div>
+    <p class="kt-empty__title">Pas encore de données</p>
+    <p class="kt-empty__text">Les statistiques apparaîtront dès les premières évaluations.</p>
+    <%= link_to "Aller au tableau", child_weeks_path(@child), class: "kt-btn kt-btn--primary" %>
+  </div>
+
+<% else %>
+
+  <div class="kt-kpi-grid">
+    <div class="kt-kpi">
+      <div class="kt-kpi__label">Taux de réussite</div>
+      <div class="kt-kpi__value"><%= s.success_rate %><span>%</span></div>
+      <div class="kt-kpi__hint">part de 🟢 sur les cases remplies</div>
+    </div>
+    <div class="kt-kpi">
+      <div class="kt-kpi__label">Moyenne / semaine</div>
+      <div class="kt-kpi__value <%= s.average_week_score.negative? ? 'is-neg' : 'is-pos' %>">
+        <%= s.average_week_score > 0 ? "+#{s.average_week_score}" : s.average_week_score %><span>pts</span>
+      </div>
+      <div class="kt-kpi__hint">sur <%= s.weekly_scores.size %> semaine(s)</div>
+    </div>
+    <div class="kt-kpi">
+      <div class="kt-kpi__label">Jours sans 🔴</div>
+      <div class="kt-kpi__value"><%= s.days_without_red %><span>j</span></div>
+      <div class="kt-kpi__hint">série en cours cette semaine</div>
+    </div>
+    <div class="kt-kpi">
+      <div class="kt-kpi__label">Remplissage</div>
+      <div class="kt-kpi__value"><%= s.current_week_fill_rate %><span>%</span></div>
+      <div class="kt-kpi__hint">cases renseignées cette semaine</div>
+    </div>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Répartition des évaluations</h2>
+    <div class="kt-stack-bar">
+      <% if s.green.positive? %>
+        <div class="kt-stack-bar__seg is-green" style="width: <%= s.share('green') %>%"
+             title="<%= s.green %> verts"><%= s.share('green').round %>%</div>
+      <% end %>
+      <% if s.yellow.positive? %>
+        <div class="kt-stack-bar__seg is-yellow" style="width: <%= s.share('yellow') %>%"
+             title="<%= s.yellow %> jaunes"><%= s.share('yellow').round %>%</div>
+      <% end %>
+      <% if s.red.positive? %>
+        <div class="kt-stack-bar__seg is-red" style="width: <%= s.share('red') %>%"
+             title="<%= s.red %> rouges"><%= s.share('red').round %>%</div>
+      <% end %>
+    </div>
+    <div class="kt-stack-legend">
+      <span><i class="is-green"></i> <%= s.green %> verts</span>
+      <span><i class="is-yellow"></i> <%= s.yellow %> jaunes</span>
+      <span><i class="is-red"></i> <%= s.red %> rouges</span>
+    </div>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Évolution du score hebdomadaire</h2>
+    <% max = [(s.weekly_scores.map { |w| w[:score].abs }.max || 1), 1].max %>
+    <div class="kt-bars">
+      <% s.weekly_scores.each do |w| %>
+        <% h = (w[:score].abs * 100.0 / max).round %>
+        <div class="kt-bars__col" title="<%= w[:label] %> : <%= w[:score] %> pts">
+          <div class="kt-bars__half kt-bars__half--pos">
+            <% if w[:score] > 0 %>
+              <div class="kt-bars__bar is-pos <%= 'is-current' unless w[:finalized] %>"
+                   style="height: <%= h %>%"></div>
+            <% end %>
+          </div>
+          <div class="kt-bars__axis"></div>
+          <div class="kt-bars__half kt-bars__half--neg">
+            <% if w[:score] < 0 %>
+              <div class="kt-bars__bar is-neg <%= 'is-current' unless w[:finalized] %>"
+                   style="height: <%= h %>%"></div>
+            <% end %>
+          </div>
+          <div class="kt-bars__label"><%= w[:label] %></div>
+        </div>
+      <% end %>
+    </div>
+    <p class="kt-stat-note">Les barres hachurées correspondent à la semaine en cours, non finalisée.</p>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Points cumulés par jour de la semaine</h2>
+    <% wd   = s.points_by_weekday %>
+    <% wmax = [(wd.map { |d| d[:score].abs }.max || 1), 1].max %>
+    <div class="kt-bars kt-bars--compact">
+      <% wd.each do |d| %>
+        <% h = (d[:score].abs * 100.0 / wmax).round %>
+        <div class="kt-bars__col" title="<%= d[:day] %> : <%= d[:score] %> pts">
+          <div class="kt-bars__half kt-bars__half--pos">
+            <% if d[:score] > 0 %><div class="kt-bars__bar is-pos" style="height:<%= h %>%"></div><% end %>
+          </div>
+          <div class="kt-bars__axis"></div>
+          <div class="kt-bars__half kt-bars__half--neg">
+            <% if d[:score] < 0 %><div class="kt-bars__bar is-neg" style="height:<%= h %>%"></div><% end %>
+          </div>
+          <div class="kt-bars__label"><%= d[:short] %></div>
+        </div>
+      <% end %>
+    </div>
+    <% if s.hardest_weekday && s.hardest_weekday[:score].negative? %>
+      <p class="kt-stat-note">
+        Jour le plus difficile : <strong><%= s.hardest_weekday[:day] %></strong>
+        (<%= s.hardest_weekday[:score] %> pts cumulés)
+      </p>
+    <% end %>
+  </div>
+
+  <div class="kt-stat-cols">
+    <div class="kt-card kt-stat-block">
+      <h2 class="kt-stat-title">Items les plus difficiles</h2>
+      <% hardest = s.hardest_items %>
+      <% if hardest.empty? %>
+        <p class="kt-stat-empty">Aucun 🔴 enregistré.</p>
+      <% else %>
+        <% hmax = hardest.values.max %>
+        <div class="kt-hbars">
+          <% hardest.each do |name, count| %>
+            <div class="kt-hbar">
+              <div class="kt-hbar__label" title="<%= name %>"><%= name %></div>
+              <div class="kt-hbar__track">
+                <div class="kt-hbar__fill is-red" style="width: <%= (count * 100.0 / hmax).round %>%"></div>
+              </div>
+              <div class="kt-hbar__value"><%= count %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="kt-card kt-stat-block">
+      <h2 class="kt-stat-title">Items les mieux réussis</h2>
+      <% best = s.best_items %>
+      <% if best.empty? %>
+        <p class="kt-stat-empty">Pas encore de 🟢 enregistré.</p>
+      <% else %>
+        <% bmax = best.values.max %>
+        <div class="kt-hbars">
+          <% best.each do |name, count| %>
+            <div class="kt-hbar">
+              <div class="kt-hbar__label" title="<%= name %>"><%= name %></div>
+              <div class="kt-hbar__track">
+                <div class="kt-hbar__fill is-green" style="width: <%= (count * 100.0 / bmax).round %>%"></div>
+              </div>
+              <div class="kt-hbar__value"><%= count %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="kt-card kt-stat-block">
+    <h2 class="kt-stat-title">Points gagnés et dépensés</h2>
+    <div class="kt-kpi-grid kt-kpi-grid--inline">
+      <div class="kt-kpi">
+        <div class="kt-kpi__label">Gagnés</div>
+        <div class="kt-kpi__value is-pos">+<%= s.points_earned %><span>pts</span></div>
+      </div>
+      <div class="kt-kpi">
+        <div class="kt-kpi__label">Dépensés</div>
+        <div class="kt-kpi__value is-neg">−<%= s.points_spent %><span>pts</span></div>
+      </div>
+      <div class="kt-kpi">
+        <div class="kt-kpi__label">Privilèges obtenus</div>
+        <div class="kt-kpi__value"><%= s.privileges_redeemed %></div>
+      </div>
+      <div class="kt-kpi">
+        <div class="kt-kpi__label">Solde actuel</div>
+        <div class="kt-kpi__value"><%= @child.total_points %><span>pts</span></div>
+      </div>
+    </div>
+    <% fav = s.favourite_privilege %>
+    <% if fav %>
+      <p class="kt-stat-note">
+        Privilège préféré : <strong><%= fav[0] %></strong> — <%= fav[1] %> unité(s) rachetée(s)
+      </p>
+    <% end %>
+  </div>
+
+<% end %>
+
+<div style="margin-top:1.25rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+  <%= link_to "Retour au profil", child_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+  <%= link_to "Tableau de la semaine", child_weeks_path(@child), class: "kt-btn kt-btn--ghost kt-btn--sm" %>
+</div>

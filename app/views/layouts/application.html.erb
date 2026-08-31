@@ -11,13 +11,11 @@
   </head>
 
   <body>
-    <%# La navbar n'apparaît que pour les utilisateurs connectés :
-        la page de login occupe alors tout l'écran. %>
     <% if user_signed_in? %>
       <nav class="kt-navbar">
         <%= link_to dashboard_path, class: "kt-navbar__brand" do %>
           <span class="kt-navbar__brand-img">
-              <%= image_tag "family_icon.png", alt: "", width: 30, height: 30 %>
+            <%= image_tag "family_icon.png", alt: "", width: 30, height: 30 %>
           </span>
           KidTracker
         <% end %>
@@ -25,6 +23,9 @@
         <div class="kt-navbar__nav">
           <%= link_to children_path, class: "kt-navbar__link" do %>
             👧 <span>Enfants</span>
+          <% end %>
+          <%= link_to stats_path, class: "kt-navbar__link" do %>
+            📊 <span>Stats</span>
           <% end %>
           <%= link_to items_path, class: "kt-navbar__link" do %>
             📋 <span>Items</span>
@@ -37,6 +38,10 @@
               ⚙️ Admin
             <% end %>
           <% end %>
+          <%= link_to edit_user_registration_path, class: "kt-navbar__user",
+                title: "Mon compte" do %>
+            <%= current_user.display_name %>
+          <% end %>
           <%= link_to destroy_user_session_path,
                 class: "kt-navbar__link",
                 data: { turbo_method: :delete } do %>
@@ -46,7 +51,6 @@
       </nav>
     <% end %>
 
-    <%# Sur la page de login, l'alerte est affichée dans la carte elle-même %>
     <% if notice.present? %>
       <div class="kt-flash">
         <div class="kt-flash__notice"><%= notice %></div>
