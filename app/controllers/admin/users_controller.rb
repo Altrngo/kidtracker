@@ -5,7 +5,7 @@ module Admin
     before_action :set_user, only: %i[show edit update destroy]
 
     def index
-      @users = User.includes(:children).order(:email)
+      @users = User.includes(:children).order(:username)
     end
 
     def show
@@ -19,23 +19,20 @@ module Admin
     def create
       @user = User.new(user_params)
       if @user.save
-        redirect_to admin_users_path, notice: "Utilisateur créé."
+        redirect_to admin_users_path, notice: "Utilisateur #{@user.display_name} créé."
       else
         render :new, status: :unprocessable_entity
       end
     end
 
-    def edit
-    end
+    def edit; end
 
     def update
-      # Ne pas écraser le mot de passe si le champ est vide
-      params_to_apply = user_params
-      if params_to_apply[:password].blank?
-        params_to_apply = params_to_apply.except(:password, :password_confirmation)
-      end
+      attrs = user_params
+      # Ne pas écraser le mot de passe si le champ est laissé vide
+      attrs = attrs.except(:password, :password_confirmation) if attrs[:password].blank?
 
-      if @user.update(params_to_apply)
+      if @user.update(attrs)
         redirect_to admin_users_path, notice: "Utilisateur mis à jour."
       else
         render :edit, status: :unprocessable_entity
@@ -43,6 +40,11 @@ module Admin
     end
 
     def destroy
+      if @user == current_user
+        redirect_to admin_users_path, alert: "Vous ne pouvez pas supprimer votre propre compte."
+        return
+      end
+
       @user.destroy
       redirect_to admin_users_path, notice: "Utilisateur supprimé."
     end
@@ -58,7 +60,8 @@ module Admin
     end
 
     def user_params
-      params.require(:user).permit(:email, :password, :password_confirmation, :admin)
+      params.require(:user)
+            .permit(:email, :username, :password, :password_confirmation, :admin)
     end
   end
 end
